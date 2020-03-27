@@ -4,7 +4,7 @@ Basic IO routines.
 """
 import json
 
-def write_scp(file:str, content:dict=None) -> None:
+def write_scp(file:str, scp:dict=None) -> None:
     """
     Write content into a json file. The content is a dictionary where the 'key' is utt_id.
     Indexing by utt_id allows to match contents between multiple json_files. This is used
@@ -20,12 +20,12 @@ def write_scp(file:str, content:dict=None) -> None:
         content .... a dictionary of the format dict[utt_id] = value (default:dict = None)
     """
     if not isinstance(file,str):
-        print('Wrong input type, expected string.')
+        print(f'write_scp(): Expected string as file, got {type(file)}.')
         exit(1)
 
-    if not isinstance(content,dict):
-        print('Wrong input type, expected dict.')
+    if not isinstance(scp,dict):
+        print(f'write_scp(): Expected dictionary as scp, got {type(file)}.')
         exit(1)
 
     with open(file, 'w', encoding = 'utf-8') as fh:
-        json.dump(content,fh, ensure_ascii=False, indent=1)
+        json.dump(scp,fh, ensure_ascii=False, indent=1)

@@ -4,11 +4,10 @@ Made by Michal Borsky, 2019, copyright (C) RU
 Collection of utility routines to manipulate datasets, do checks.
 Some functions are generators and have return in loop.
 """
-from .date_to_string import date_to_string
-from .string_to_date import string_to_date
 from datetime import timedelta
+import sleepat.utils as utils
 
-def segment_stamps(stamp, segments:dict=None) -> tuple:
+def segment_periods(periods:dict, segments:dict=None) -> tuple:
     """
     Segment a waveform with the sampling frequency fs according to a dict of segments.
     We assume a segment is a dict of {'onset' = float, 'duration' = float, 'id' = string}.
@@ -17,15 +16,14 @@ def segment_stamps(stamp, segments:dict=None) -> tuple:
     The function is a generator, the accumulation happens on the consumer part.
     Input:
         stamps ....
-        fs .... sampling frequency in Hz, (default:float = 8000).
         segments .... a dictionary of segments, see create.segments(), (default:dict = None).
     Output:
         a tuple of (seg_id, seg_wave, seg_duration).
     """
     if segments is None or len(segments) == 0:
-        return ('0000', stamp)
+        return ('0000', periods)
 
-    for seg_id, item in segments.items():
-        seg_start = string_to_date(stamp['start']) + timedelta(seconds = item['onset'])
-        seg_end = seg_start + timedelta(seconds=item['duration'])
-        yield (seg_id, {'start':date_to_string(seg_start),'end':date_to_string(seg_end)})
+    for segm_id, segm in segments.items():
+        segm_start = utils.string_to_date(periods['start']) + timedelta(seconds = segm['onset'])
+        segm_period = {'start':utils.date_to_string(segm_start),'duration':segm['duration']}
+        yield (segm_id, segm_period)

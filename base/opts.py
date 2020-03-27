@@ -2,9 +2,8 @@
     Made by Michal Borsky, 2019, copyright (C) RU
     Configuration Library with options for all routines
 """
-import numpy as np
 from inspect import getargspec
-from sleepat.io import read_scp
+import sleepat.io as io
 
 ## Base Options Class for functionality
 ## All other classes adopt functionality but define their own attributes
@@ -17,7 +16,7 @@ class BaseOpts(object):
             setattr(self,key,item)
 
     def update_from_config(self, config:str):
-        conf = read_scp(config)
+        conf = io.read_scp(config)
         for key, item in conf.items():
             if hasattr(self, key):
                 setattr(self, key, item)
@@ -197,6 +196,15 @@ class AnnotToTargetsOpts(BaseOpts):
         self.register_from_opts(TimeToFrameOpts())
         self.update(config,kwargs)
 
+class SegmentDataOpts(BaseOpts):
+    def __init__(self, config:str = None, **kwargs):
+        self.__name__ = 'CreateSegmentsOpts'
+        self.segm_len = 10.0
+        self.segm_len_min = 1.0
+        self.segm_len_max = 20.0
+        self.not_wave = True
+        self.update(config,kwargs)
+
 ## Dataset Options
 class SimpleDatasetOpts(BaseOpts):
     """
@@ -250,7 +258,7 @@ class TrainMdlOpts(BaseOpts):
     def __init__(self,config:str = None, **kwargs):
         self.__name__ = 'TrainMnnOpts'
         self.max_epochs = 100
-        self.save_iters = np.array([1,5,10,15,20,30,40,50,60,70,80,90,100])
+        self.save_iters = [1,5,10,15,20,30,40,50,60,70,80,90,100]
         self.update(config,kwargs)
 
 class CnnSnoreOpts(BaseOpts):

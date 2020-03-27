@@ -5,7 +5,6 @@ Collection of utility routines to manipulate datasets, do checks.
 Some functions are generators and have return in loop.
 """
 import copy
-import numpy as np
 
 def segment_events(events:list, segments:dict) -> dict:
     """
@@ -29,12 +28,12 @@ def segment_events(events:list, segments:dict) -> dict:
     lower = 0
     for seg_id, seg in segments.items():
         seg_beg = seg['onset']
-        seg_end = np.round(seg['onset']+seg['duration'],5)
+        seg_end = round(seg['onset']+seg['duration'],5)
         out = list()
 
         for idx, event in enumerate(events[lower:]):
             event_beg = event['onset']
-            event_end = np.round(event['onset']+event['duration'], 5)
+            event_end = round(event['onset']+event['duration'], 5)
 
             # 0) Event is cleanly before the segment.
             if event_end <= seg_beg:
@@ -43,17 +42,17 @@ def segment_events(events:list, segments:dict) -> dict:
             if event_beg < seg_beg:
                 event_beg = seg_beg
                 event['onset'] = event_beg
-                event['duration'] = np.round(event_end-event_beg,5)
+                event['duration'] = round(event_end-event_beg,5)
             # 2,3,4) Event ends within segment.
             if event_end <= seg_end:
-                event['onset'] = np.round(event_beg-seg_beg, 5)
+                event['onset'] = round(event_beg-seg_beg, 5)
                 out.append(event)
                 continue
             # 5) Event starts within/before, but ends after segment.
             if event_beg < seg_end:
                 tmp = event.copy()
-                tmp['onset'] = np.round(event_beg-seg_beg, 5)
-                tmp['duration'] = np.round(seg_end-event_beg, 5)
+                tmp['onset'] = round(event_beg-seg_beg, 5)
+                tmp['duration'] = round(seg_end-event_beg, 5)
                 out.append(tmp)
             # 6) Event is cleanly after segment.
             # Note: Shared with previous case due to Assumption 3)

@@ -13,11 +13,11 @@ saved as json files. The processed dataset will contain the following files:
     segments ...contains info how to segment other files, optional.
 
 """
-import os
-import numpy as np
-from sleepat.io import read_scp, read_edf_channel, write_npy, write_scp
-from sleepat.utils import filter_events, segment_wave, segment_events, validate_data
-from sleepat.utils import utt2spk_to_spk2utt
+from os import mkdir
+from os.path import join, exists
+
+import sleepat.io as io
+import sleepat.utils as utils
 
 def format_data(src_dir:str, dst_dir:str=None, wave_dir:str=None, channel:str = 'Audio'):
     """
@@ -30,15 +30,15 @@ def format_data(src_dir:str, dst_dir:str=None, wave_dir:str=None, channel:str = 
         channel .... which channel to extract from EDF container (default:str = 'Audio')
     """
     print('Formatting data from folder %s into a standard form' % src_dir)
-    if not os.path.exists(dst_dir):
-        os.mkdir(dst_dir)
+    if not exists(dst_dir):
+        mkdir(dst_dir)
 
     ## Config section
-    waves = read_scp(os.path.join(src_dir,'edf.scp'))
-    annot = read_scp(os.path.join(src_dir,'annotation'))
-    utt2spk = read_scp(os.path.join(src_dir,'utt2spk'))
-    segments = read_scp(os.path.join(src_dir,'segments'))
-    stamps = read_scp(os.path.join(src_dir,'timestamps'))
+    waves = io.read_scp(join(src_dir,'wave.scp'))
+    annot = io.read_scp(join(src_dir,'annotation'))
+    utt2spk = io.read_scp(join(src_dir,'utt2spk'))
+    segments = io.read_scp(join(src_dir,'segments'))
+    periods = io.read_scp(join(src_dir,'periods'))
     valid_events = ['snorebreath','breathing-effort']
 
 
@@ -48,26 +48,26 @@ def format_data(src_dir:str, dst_dir:str=None, wave_dir:str=None, channel:str = 
     utt2spk_new = dict()
     for utt_id in utt2spk:
         print('Extracting channel %s from EDF file %s.' % (channel, waves[utt_id]['file']))
-        wave,fs = read_edf_channel(waves[utt_id]['file'],channel)
-        events = filter_events(annot[utt_id],'label', valid_events)
+        wave,fs = io.read_edf_channel(waves[utt_id]['file'],channel)
+        events = utils.filter_events(annot[utt_id],'label', valid_events)
 
         print('Segmenting waveforms.')
-        for seg_id,seg_wave in segment_wave(wave,fs, segments[utt_id]):
-            file = os.path.join(wave_dir, seg_id + '.npy')
-            waves_new[seg_id] = {'file':file,'fs':fs}
-            utt2spk_new[seg_id] = utt_id
-            write_npy(file, seg_wave, dtype='int16')
+        for segm_id,segm_wave in utils.segment_wave(wave,fs, segments[utt_id]):
+            file = join(wave_dir, segm_id + '.npy')
+            waves_new[segm_id] = {'file':file,'fs':fs}
+            utt2spk_new[segm_id] = utt_id
+            io.write_npy(file, segm_wave, dtype='int16')
 
         print('Segmenting annotation, onsets will be normalized.')
-        for seg_id,seg_events in segment_events(events, segments[utt_id]):
-            annot_new[seg_id] = seg_events
+        for segm_id,segm_events in utils.segment_events(events, segments[utt_id]):
+            annot_new[segm_id] = segm_events
 
     # Dump on disk  
-    write_scp(os.path.join(dst_dir,'wave.scp'), waves_new)
-    write_scp(os.path.join(dst_dir,'timestamps'), stamps)
-    write_scp(os.path.join(dst_dir,'annotation'), annot_new)
-    write_scp(os.path.join(dst_dir,'utt2spk'), utt2spk_new)
-    write_scp(os.path.join(dst_dir,'spk2utt'), utt2spk_to_spk2utt(utt2spk_new))
+    io.write_scp(join(dst_dir,'wave.scp'), waves_new)
+    io.write_scp(join(dst_dir,'annotation'), annot_new)
+    io.write_scp(join(dst_dir,'utt2spk'), utt2spk_new)
+    io.write_scp(join(dst_dir,'spk2utt'), utils.utt2spk_to_spk2utt(utt2spk_new))
+    io.write_scp(join(dst_dir,'periods'),periods)
 
     # Final check
-    validate_data(dst_dir)
+    utils.validate_data(dst_dir)

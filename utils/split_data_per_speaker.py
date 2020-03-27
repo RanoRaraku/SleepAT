@@ -5,9 +5,8 @@ Collection of high-level routines used to built whole projects.
 from os import makedirs
 from os.path import isdir, isfile, join
 from random import shuffle
-from sleepat.utils import segments_to_seg2utt, seg2utt_to_segments
-from sleepat.utils import utt2spk_to_spk2utt
-from sleepat.io import read_scp, write_scp
+import sleepat.utils as utils
+import sleepat.io as io
 
 def split_data_per_speaker(data_dir:str, dst_dir:str=None,
     subsets:list=['train','dev','eval'], ratio:list=[8,1,1]) -> None:
@@ -27,8 +26,8 @@ def split_data_per_speaker(data_dir:str, dst_dir:str=None,
     print(f'Splitting on per-utterance basis {data_dir}.')
 
     ## Config section
-    files_to_split = ['utt2spk','annotation','feats.scp','targets.scp', 'timestamps']
-    spk2utt = read_scp(join(data_dir,'spk2utt'))
+    files_to_split = ['utt2spk','annotation','feats.scp','targets.scp', 'periods']
+    spk2utt = io.read_scp(join(data_dir,'spk2utt'))
     spk_list = list(spk2utt.keys())
     shuffle(spk_list)
     spk_num = len(spk_list)
@@ -57,15 +56,15 @@ def split_data_per_speaker(data_dir:str, dst_dir:str=None,
 
     ## Handle wave.scp/segments
     if isfile(join(data_dir,'segments')):
-        wave = read_scp(join(data_dir,'wave.scp'))
-        segments = read_scp(join(data_dir,'segments'))
-        seg2utt = segments_to_seg2utt(segments)
+        waves = io.read_scp(join(data_dir,'wave.scp'))
+        segments = io.read_scp(join(data_dir,'segments'))
+        seg2utt = utils.segments_to_seg2utt(segments)
         for subset in subsets:
             subset_seg2utt = {utt: seg2utt[utt] for utt in subset_utt[subset]}
-            subset_segments = seg2utt_to_segments(subset_seg2utt)
-            subset_wave = {utt: wave[utt] for utt in subset_segments}
-            write_scp(join(dst_dir,subset,'wave.scp'), subset_wave)
-            write_scp(join(dst_dir,subset,'segments'), subset_segments)
+            subset_segments = utils.seg2utt_to_segments(subset_seg2utt)
+            subset_wave = {utt: waves[utt] for utt in subset_segments}
+            io.write_scp(join(dst_dir,subset,'wave.scp'), subset_wave)
+            io.write_scp(join(dst_dir,subset,'segments'), subset_segments)
     else:
         files_to_split.append('wave.scp')
 
@@ -73,11 +72,11 @@ def split_data_per_speaker(data_dir:str, dst_dir:str=None,
     for file in files_to_split:
         if not isfile(join(data_dir,file)):
             continue
-        scp = read_scp(join(data_dir,file))
+        scp = io.read_scp(join(data_dir,file))
         for subset in subsets:
             dst_file = join(dst_dir,subset,file)
             subset_scp = {utt: scp[utt] for utt in subset_utt[subset]}
-            write_scp(dst_file,subset_scp)
+            io.write_scp(dst_file,subset_scp)
             if file == 'utt2spk':
-                spk2utt = utt2spk_to_spk2utt(subset_scp)
-                write_scp(join(dst_dir,subset,'spk2utt'),spk2utt)
+                spk2utt = utils.utt2spk_to_spk2utt(subset_scp)
+                io.write_scp(join(dst_dir,subset,'spk2utt'),spk2utt)

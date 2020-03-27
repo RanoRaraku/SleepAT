@@ -1,7 +1,6 @@
 """
 Made by Michal Borsky, 2019, copyright (C) RU
 """
-import numpy as np
 from sleepat.io import read_scp
 
 def parse_scoring(file:str, scoring = ['ms_snore','ms_snore_v2']):
@@ -19,7 +18,7 @@ def parse_scoring(file:str, scoring = ['ms_snore','ms_snore_v2']):
         event_list ... a standardized dictionary of all scorings
     """
     out = list()
-    data = io.read_scp(file)
+    data = read_scp(file)
     start_marker = 'period-analysisstart'
     end_marker = 'period-analysisstop'
 
@@ -39,7 +38,7 @@ def parse_scoring(file:str, scoring = ['ms_snore','ms_snore_v2']):
             tmp['label'] = 'analysis-period'
             idx = i
         if tmp['label'] == end_marker:
-            out[idx]['duration'] = np.round(tmp['onset'] - out[idx]['onset'],5)
+            out[idx]['duration'] = round(tmp['onset'] - out[idx]['onset'],5)
         else:        
             out.append(tmp)
     return out

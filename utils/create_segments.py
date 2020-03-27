@@ -4,11 +4,11 @@ Made by Michal Borsky, 2019, copyright (C) RU
 Collection of utility routines to manipulate datasets, do checks.
 Some functions are generators and have return in loop.
 """
-import os
-import numpy as np
+from os.path import join
 from sleepat.io import read_scp
+from sleepat.dsp import wave_to_len
 
-def create_segments(data_dir:str, seg_len:float=10.0, min_seg_len:float = 1.0, max_seg_len:float = 15) -> None:
+def create_segments(data_dir:str, segm_len:float, segm_len_min:float) -> None:
     """
     Creates a segments file that specifies how to segment wave files into non-overlapping chunks.
     The file is saved in data_dir. The script expects wave.scp and annotation to make sure the
@@ -24,26 +24,26 @@ def create_segments(data_dir:str, seg_len:float=10.0, min_seg_len:float = 1.0, m
     print('Preparing segments file for %s' % data_dir)
 
     ## Config section
-    annot_dict = read_scp(os.path.join(data_dir,'annotation'))
-    wave_dict = read_scp(os.path.join(data_dir,'wave.scp'))
+    annot_dict = read_scp(join(data_dir,'annotation'))
+    wave_dict = read_scp(join(data_dir,'wave.scp'))
 
     ## Main
     segments = dict()
-    for utt_id in annot_dict:
-        utt_len = wave_to_len(wave_dict[utt_id]['file'])
+    for utt_id, item in wave_dict.items():
+        utt_len = wave_to_len(item['file'], item['fs'])
         (seg_beg,idx) = 0.0, 0
         tmp = dict()
 
         while seg_beg < utt_len:
             # Setup a preliminary segment end
             seg_id = '-'.join([utt_id,'{:04}'.format(idx)])
-            seg_end = np.round(np.minimum(seg_beg+seg_len, utt_len),5)
-            if seg_end + min_seg_len >= utt_len:
+            seg_end = round(min(seg_beg+segm_len, utt_len),5)
+            if seg_end + segm_len_min >= utt_len:
                 seg_end = utt_len
-            """
+            """ Legacy code when I checked events before cutting
             for i, event in enumerate(events):
                 event_beg = event['onset']
-                event_end = np.round(event['onset']+event['duration'],5)
+                event_end = round(event['onset']+event['duration'],5)
 
                 # 0) Event is cleanly before the segment.
                 if event_end <= seg_beg:
@@ -61,7 +61,7 @@ def create_segments(data_dir:str, seg_len:float=10.0, min_seg_len:float = 1.0, m
                     events = events[i:]
                     break
             """
-            tmp[seg_id] = {'onset': np.round(seg_beg,5),'duration': np.round(seg_end-seg_beg,5)}
+            tmp[seg_id] = {'onset': round(seg_beg,5),'duration': round(seg_end-seg_beg,5)}
             seg_beg = seg_end
             idx += 1
         segments[utt_id] = tmp

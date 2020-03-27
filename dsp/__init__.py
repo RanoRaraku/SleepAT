@@ -10,3 +10,4 @@ from .preemphasis import preemphasis
 from .segment import segment
 from .spect import spect
 from .time_to_frame import time_to_frame
+from .wave_to_len import wave_to_len

@@ -4,7 +4,7 @@ Made by Michal Borsky, 2019, copyright (C) RU
 Collection of utility routines to manipulate datasets, do checks.
 Some functions are generators and have return in loop.
 """
-from sleepat.io import read_scp, write_scp
+import sleepat.io as io
 
 def merge_scp(*args,file_out:str) -> None:
     """
@@ -22,15 +22,15 @@ def merge_scp(*args,file_out:str) -> None:
         exit(1)
 
     if len(args) ==1:
-        write_scp(file_out, read_scp(args[0]))
+        io.write_scp(file_out, io.read_scp(args[0]))
         return
 
     merged = dict()
     for file in args:
-        scp = read_scp(file)
+        scp = io.read_scp(file)
         for key,item in scp.items():
             if key in merged:
                 merged[key].append(item)
             else:
                 merged[key] = [item]
-    write_scp(file_out, merged)
+    io.write_scp(file_out, merged)

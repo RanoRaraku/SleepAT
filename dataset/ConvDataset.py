@@ -29,7 +29,7 @@ class ConvDataset(Dataset):
     likely be used with DataLoader, which adds batching and other functionality.
     """
     def __init__(self, data_dir:str, config:str=None, **kwargs):
-       """
+        """
         Optional args <> can be set from a config file or as **kwargs.
         DataLoader args can be specified as well but are loaded
         dynamically, check your Torch version for defaults.
@@ -122,11 +122,12 @@ class ConvDataset(Dataset):
     def set_sample_dim(self):
         """
         Set output sample dimension, takes into account feature post-processing.
+        We assume the features are 2D.
         """
         if len(self.feats_scp) == 0:
             print('SimpleDataset.set_sample_dim(): No samples in your dataset, (empty feats.scp?)')
             exit(1)
-        m = feats_to_dim(self.feats_scp)
+        m = feats_to_dim(self.feats_scp)[0]
         n = 1+self.conf.context_left+self.conf.context_right
 
         if self.conf.add_delta:

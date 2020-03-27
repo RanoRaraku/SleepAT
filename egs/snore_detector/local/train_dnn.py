@@ -4,9 +4,9 @@ Collection of high-level routines used to built whole projects.
 """
 from os import mkdir
 from os.path import isdir, join
-from sleepat.io import read_scp
-from sleepat.nnet import DnnSnore, train_mdl
-from sleepat.dataset import SimpleDataset
+import sleepat.io as io
+import sleepat.nnet as nnet
+import sleepat.dataset as dataset 
 
 def train_dnn(train_data:str, dev_data:str, score_dir:str, exp_dir:str,
     config_dataset:str=None, config_mdl:str=None, config_train:str=None):
@@ -31,14 +31,14 @@ def train_dnn(train_data:str, dev_data:str, score_dir:str, exp_dir:str,
     if not isdir(exp_dir):
         mkdir(exp_dir)
 
-    classes = read_scp(join(score_dir,'classes'))
+    classes = io.read_scp(join(score_dir,'classes'))
     classes_num = len(set(list(classes.values())))
     if classes_num < 1:
         print(f'Error: number of classes < 2.')
         exit(1)
 
-    trainload = SimpleDataset(train_data,config=config_dataset).to_dataloader()
-    devload = SimpleDataset(dev_data,config=config_dataset).to_dataloader()
+    trainload = dataset.SimpleDataset(train_data,config=config_dataset).to_dataloader()
+    devload = dataset.SimpleDataset(dev_data,config=config_dataset).to_dataloader()
     sample_dim = trainload.dataset.sample_dim
     if len(sample_dim) > 1:
         print(f'Error: sample dimension > 1. DNN expects a flat input.')
@@ -46,8 +46,8 @@ def train_dnn(train_data:str, dev_data:str, score_dir:str, exp_dir:str,
     sample_dim = sample_dim[0]
 
     # Train the model
-    mdl = DnnSnore(config=config_mdl, in_dim=sample_dim, out_dim=classes_num)
-    train_mdl(mdl, trainload, devload, exp_dir, config=config_train)
+    mdl = nnet.DnnSnore(config=config_mdl, in_dim=sample_dim, out_dim=classes_num)
+    nnet.train_mdl(mdl, trainload, devload, exp_dir, config=config_train)
 
     # Eval performance
     #evalload = SimpleDataset(eval_dir,config=config_dataset).to_dataloader()

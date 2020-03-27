@@ -1,11 +1,12 @@
 """
 Made by Michal Borsky, 2019, copyright (C) RU
 """
-import os
+from os import makedirs
+from os.path import exists, join
 from datetime import timedelta
-from .parse_scoring import parse_scoring
-from sleepat.io import write_scp
-from sleepat.utils import list_files, filter_events, string_to_date, date_to_string
+import sleepat.io as io
+import sleepat.utils as utils
+import sleepat.egs.snore_detector.local as local
 
 def prepare_data(vsn_dir:str, dst_dir:str) -> None:
     """
@@ -25,49 +26,47 @@ def prepare_data(vsn_dir:str, dst_dir:str) -> None:
     print('Preparing dataset %s' % vsn_dir)
 
     ## Configuration
-    bad_utt = ['VSN-10-048-015']
+    null_spk = ['VSN-10-048-015']
     marta_scorings = ['ms_snore','ms_snore_v2']
     period_marker = 'analysis-period'
-    if not os.path.exists(vsn_dir):
+    if not exists(vsn_dir):
         exit()
-    if not os.path.exists(dst_dir):
-        os.makedirs(dst_dir)
+    if not exists(dst_dir):
+        makedirs(dst_dir)
 
     ## Create the wave.scp file (we extract wave later)
-    waves,utt2spk = dict(), dict()
+    wave,utt2spk,periods = dict(), dict(), dict()
     annot,segments = dict(), dict()
-    timestamps = dict()
-    print('Creating a list of edf files into %s' % os.path.join(dst_dir,'edf.scp'))
-    for file in list_files(vsn_dir,'.edf'):
+    print('Creating a list of edf files into %s' % join(dst_dir,'edf.scp'))
+    for file in utils.list_files(vsn_dir,'.edf'):
         utt_id = file.split('.')[0]
-        if utt_id in bad_utt:
-            continue
+        if utt_id in null_spk:
+            pass
 
         # Wave.scp file (we extract wave later)    
-        waves[utt_id] = {'file':os.path.join(vsn_dir,file)}
+        wave[utt_id] = {'file':join(vsn_dir,file)}
         utt2spk[utt_id] = utt_id    # Utt_id is a also spk_id, there is 1 file per speaker
 
         # Annotation file from scoring.json
         events = list()
-        json_file = os.path.join(vsn_dir, utt_id+'.scoring.json')
+        json_file = join(vsn_dir, utt_id+'.scoring.json')
         for scoring in marta_scorings:
-            events = events + parse_scoring(json_file,scoring)
+            events = events + local.parse_scoring(json_file,scoring)
         annot[utt_id] = events
 
-        # Segments file, a segment is defined by analysis-period event
+        # Segments file, a segment is defined by the "analysis-period" event
         tmp = dict()
-        for i, period  in enumerate(filter_events(events,'label',period_marker)):
+        for i, period  in enumerate(utils.filter_events(events,'label',period_marker)):
             seg_id = '-'.join([utt_id,str(i)])
-            tmp[seg_id] = {'onset':period['onset'],'duration':period['duration']}
-            end = string_to_date(period['start']) + timedelta(seconds=period['duration'])
-            timestamps[seg_id] = {'start':period['start'], 'end': date_to_string(end)}
+            tmp[seg_id] = {'start':period['start'],'onset':period['onset'],'duration':period['duration']}
+            periods[seg_id] = {'start':period['start'],'duration':period['duration']}
         segments[utt_id] = tmp
 
 
     # Dump on disk
-    write_scp(os.path.join(dst_dir,'edf.scp'),waves)
-    write_scp(os.path.join(dst_dir,'utt2spk'),utt2spk)
-    write_scp(os.path.join(dst_dir,'spk2utt'),utt2spk)
-    write_scp(os.path.join(dst_dir,'annotation'),annot)
-    write_scp(os.path.join(dst_dir,'segments'),segments)
-    write_scp(os.path.join(dst_dir,'timestamps'),timestamps)
+    io.write_scp(join(dst_dir,'wave.scp'),wave)
+    io.write_scp(join(dst_dir,'utt2spk'),utt2spk)
+    io.write_scp(join(dst_dir,'spk2utt'),utt2spk)
+    io.write_scp(join(dst_dir,'annotation'),annot)
+    io.write_scp(join(dst_dir,'segments'),segments)
+    io.write_scp(join(dst_dir,'periods'),periods)

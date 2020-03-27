@@ -4,9 +4,9 @@ Made by Michal Borsky, 2019, copyright (C) RU
 Collection of utility routines to manipulate datasets, do checks.
 Some functions are generators and have return in loop.
 """
-import numpy as np
+from numpy import ndarray
 
-def segment_wave(wave:np.ndarray, fs:float=8000, segments:dict=None) -> np.ndarray:
+def segment_wave(wave:ndarray, fs:float=8000, segments:dict=None) -> ndarray:
     """
     Segment a waveform with the sampling frequency fs according to a dict of segments.
     We assume a segment is a dict of {'onset' = float, 'duration' = float, 'id' = string}.
@@ -30,4 +30,4 @@ def segment_wave(wave:np.ndarray, fs:float=8000, segments:dict=None) -> np.ndarr
             print(f'utils.segment_wave(): segment {seg_id} is longer than waveform.')
             exit()
         else:
-            yield (seg_id,wave[seg_beg:seg_end])
+            yield (seg_id, wave[seg_beg:seg_end])
