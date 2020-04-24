@@ -2,9 +2,8 @@
 Made by Michal Borsky, 2019, copyright (C) RU
 Basic DPS library.
 """
-import numpy as np
 
-def invmel(melf:float) -> np.ndarray:
+def invmel(melf:float) -> float:
     """
     Conversion from mel-freqency to linear frequenct scale
     ------------------------------------------------------

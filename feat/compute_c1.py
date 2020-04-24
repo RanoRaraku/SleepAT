@@ -3,8 +3,8 @@ Made by Michal Borsky, 2019, copyright (C) RU
 Acoustuc feature extraction library.
 """
 import numpy as np
-from sleepat.base.opts import C1Opts
-from sleepat.dsp import segment
+import sleepat
+from sleepat import dsp, opts
 
 def compute_c1(sig, config:str=None, **kwargs) -> np.ndarray:
     """
@@ -21,9 +21,9 @@ def compute_c1(sig, config:str=None, **kwargs) -> np.ndarray:
     Output :
         c1 ... numpy.ndarray(shape=(num_frames,1), dtype=numpy.float)
     """
-    conf = C1Opts(config,**kwargs)
+    conf = opts.C1Opts(config,**kwargs)
 
-    frames = segment(sig, conf.fs, conf.wlen, conf.wstep, conf.wtype)
+    frames = dsp.segment(sig, conf.fs, conf.wlen, conf.wstep, conf.wtype)
     c1 = np.zeros(shape=(frames.shape[0],1))
     for index, frame in enumerate(frames, start=0):
         num = np.dot(frame[:-1], frame[1:])

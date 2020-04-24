@@ -1,9 +1,10 @@
 """
 Made by Michal Borsky, 2019, copyright (C) RU
 """
-from os import mkdir
-from os.path import join, exists
-import sleepat.io as io
+import os
+from os import path
+import sleepat
+from sleepat import io
 
 def prepare_scoring(lang_dir:str) -> None:
     """
@@ -11,12 +12,12 @@ def prepare_scoring(lang_dir:str) -> None:
     It maps between 'labels' and a value used for training. It also contains
     a target value for 'null' label, i.e. when nothing is happening.
     """
-    if not exists(lang_dir):
-        mkdir(lang_dir)
+    if not path.exists(lang_dir):
+        os.mkdir(lang_dir)
 
     # Prepare lexicon
     classes = {'snorebreath':1, 'breathing-effort':0, 'null':0}
-    io.write_scp(join(lang_dir,'classes'), classes)
+    io.write_scp(path.join(lang_dir,'classes'), classes)
 
     # Prep classes
     #classes_int = np.unique(np.array(list(classes.values())))

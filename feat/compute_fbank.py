@@ -3,8 +3,8 @@ Made by Michal Borsky, 2019, copyright (C) RU
 Acoustuc feature extraction library.
 """
 import numpy as np
-from sleepat.base.opts import FbankOpts
-from sleepat.dsp import melfb, barkfb, preemphasis, pow_spect
+import sleepat
+from sleepat import dsp, opts
 
 def compute_fbank(sig, config:str=None, **kwargs) -> np.ndarray:
     """
@@ -26,7 +26,7 @@ def compute_fbank(sig, config:str=None, **kwargs) -> np.ndarray:
     Output :
         fbank_feats ... numpy.ndarray(shape=(num_frames,M), dtype=numpy.float)
     """
-    conf = FbankOpts(config,**kwargs)
+    conf = opts.FbankOpts(config,**kwargs)
 
     # Main part
     nfft = np.around(conf.wlen*conf.fs).astype(np.uint16)
@@ -35,8 +35,8 @@ def compute_fbank(sig, config:str=None, **kwargs) -> np.ndarray:
     elif conf.fbank_type == 'barkfb':
         fbank = barkfb(conf.fs, nfft, conf.fmin, conf.fmax)
 
-    sig = preemphasis(sig, conf.preemphasis_alpha)
-    pow_frames = pow_spect(sig, conf.fs, conf.wlen, conf.wstep, conf.remove_dc, conf.wtype)
+    sig = dsp.preemphasis(sig, conf.preemphasis_alpha)
+    pow_frames = dsp.pow_spect(sig, conf.fs, conf.wlen, conf.wstep, conf.remove_dc, conf.wtype)
     fbank_feats = np.dot(pow_frames,fbank.T)
     if conf.use_log_fbank:
         fbank_feats = np.where(fbank_feats == 0, np.finfo(float).eps, fbank_feats)  # Numerical Stability

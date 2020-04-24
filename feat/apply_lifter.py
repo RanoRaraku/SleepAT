@@ -3,7 +3,8 @@ Made by Michal Borsky, 2019, copyright (C) RU
 Acoustuc feature extraction library.
 """
 import numpy as np
-from sleepat.base.opts import ApplyLifterOpts
+import sleepat
+from sleepat import opts
 
 def apply_lifter(feats, config:str=None, **kwargs) -> np.ndarray:
     """
@@ -17,7 +18,7 @@ def apply_lifter(feats, config:str=None, **kwargs) -> np.ndarray:
     Output:
         np.ndarray(shape=(N,M))
     """
-    conf = ApplyLifterOpts(config,**kwargs)
+    conf = opts.ApplyLifterOpts(config,**kwargs)
 
     n = range(feats.shape[1])
     lift = 1 + (conf.lifter_order/2)*np.sin(n*np.pi/conf.lifter_order)

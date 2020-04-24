@@ -3,7 +3,6 @@ Made by Michal Borsky, 2019, copyright (C) RU
 """
 from os import makedirs
 from os.path import exists, join
-from datetime import timedelta
 import sleepat.io as io
 import sleepat.utils as utils
 import sleepat.egs.snore_detector.local as local
@@ -36,7 +35,7 @@ def prepare_data(vsn_dir:str, dst_dir:str) -> None:
 
     ## Create the wave.scp file (we extract wave later)
     wave,utt2spk,periods = dict(), dict(), dict()
-    annot,segments = dict(), dict()
+    annot,utt2seg = dict(), dict()
     print('Creating a list of edf files into %s' % join(dst_dir,'edf.scp'))
     for file in utils.list_files(vsn_dir,'.edf'):
         utt_id = file.split('.')[0]
@@ -54,13 +53,13 @@ def prepare_data(vsn_dir:str, dst_dir:str) -> None:
             events = events + local.parse_scoring(json_file,scoring)
         annot[utt_id] = events
 
-        # Segments file, a segment is defined by the "analysis-period" event
+        # utt2seg file, a segment is defined by the "analysis-period" event
         tmp = dict()
         for i, period  in enumerate(utils.filter_events(events,'label',period_marker)):
             seg_id = '-'.join([utt_id,str(i)])
             tmp[seg_id] = {'start':period['start'],'onset':period['onset'],'duration':period['duration']}
             periods[seg_id] = {'start':period['start'],'duration':period['duration']}
-        segments[utt_id] = tmp
+        utt2seg[utt_id] = tmp
 
 
     # Dump on disk
@@ -68,5 +67,5 @@ def prepare_data(vsn_dir:str, dst_dir:str) -> None:
     io.write_scp(join(dst_dir,'utt2spk'),utt2spk)
     io.write_scp(join(dst_dir,'spk2utt'),utt2spk)
     io.write_scp(join(dst_dir,'annotation'),annot)
-    io.write_scp(join(dst_dir,'segments'),segments)
+    io.write_scp(join(dst_dir,'utt2seg'),utt2seg)
     io.write_scp(join(dst_dir,'periods'),periods)

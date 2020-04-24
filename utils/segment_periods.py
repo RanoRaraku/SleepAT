@@ -4,8 +4,10 @@ Made by Michal Borsky, 2019, copyright (C) RU
 Collection of utility routines to manipulate datasets, do checks.
 Some functions are generators and have return in loop.
 """
+import datetime
 from datetime import timedelta
-import sleepat.utils as utils
+import sleepat
+from sleepat import utils
 
 def segment_periods(periods:dict, segments:dict=None) -> tuple:
     """

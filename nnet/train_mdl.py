@@ -1,18 +1,16 @@
 """
 Made by Michal Borsky, 2019, copyright (C) RU
 """
-from os import symlink
-from os.path import join
-from torch import save
-from torch.optim import SGD
-from torch.cuda import is_available
-from torch.nn import CrossEntropyLoss
-from torch.nn.functional import softmax
-from sleepat.base.opts import PyClassOpts
+import os
+from os import path
+import torch
+from torch import optim, cuda, nn
+import sleepat
+from sleepat import io, opts
 
 
-def train_mdl(mdl, trainloader, devloader, exp_dir:str,
-    config:str = None, **kwargs):
+def train_mdl(mdl, trainloader, devloader, exp_dir:str, config:str = None,
+    **kwargs):
     """
     Train a mdl using the trainset. Currently just a proxy so I
     can delete torch imports from steps. Warning, CE loss needs .long()
@@ -28,74 +26,73 @@ def train_mdl(mdl, trainloader, devloader, exp_dir:str,
         <<SGD>>  ... see torch.optim.SGD for args.
         config ... configuration file to specify all above
         **kwargs ... kwargs for specify all above
+    ToDo:
+        make SGD and CEL an option        
     """
     # Configuration
     max_epochs = 100
     save_epochs = [1,5,10,15,20,30,40,50,60,70,80,90,100]
-    conf_CEL = PyClassOpts(CrossEntropyLoss,config,**kwargs)
-    conf_SGD = PyClassOpts(SGD,config,**kwargs)
-    device = 'cuda' if is_available() else 'cpu'
-    mdl = mdl.to(device)
-    criterion = CrossEntropyLoss(**conf_CEL.as_kwargs())
-    optimizer = SGD(mdl.parameters(),**conf_SGD.as_kwargs())
-    dev_samples_num = devloader.dataset.sample_size
-    log = join(exp_dir,'log')
-    final_mdl = ''
-    final_acc = 0.0
+    conf_CEL = opts.PyClassOpts(nn.CrossEntropyLoss,config,**kwargs)
+    conf_SGD = opts.PyClassOpts(optim.SGD,config,**kwargs)
+    device = 'cuda' if cuda.is_available() else 'cpu'
+    criterion = nn.CrossEntropyLoss(**conf_CEL.as_kwargs())
+    optimizer = optim.SGD(mdl.parameters(),**conf_SGD.as_kwargs())
+    log = path.join(exp_dir,'log')
+    mdl_final = ''
+    loss_final = float("inf")
 
     # Initial model save
-    fid = join(exp_dir,'0.pth')
-    save({'epoch': 0, 'train_loss': '-',
+    mdl = mdl.to(device)
+    fid = path.join(exp_dir,'0.pth')
+    torch.save({'epoch': 0, 'train loss': '-',
         'model_state_dict': mdl.state_dict(),
         'optimizer_state_dict': optimizer.state_dict()}, fid)
-    with open(join(exp_dir,'device'), 'w') as device_fid:
-        print(device, file=device_fid)
     with open(log, 'w') as log_fid:
-        print(f'Training DNN, initial model saved into {fid}', file=log_fid)
-
+        print(f'Training DNN, initial model saved into {fid}.', file=log_fid)
+    with open(log, 'a') as log_fid:
+        print(f'Using {device} to train the network.', file=log_fid)
+    io.write_scp(path.join(exp_dir,'device'),{'device':device})
 
     # Training
     for epoch in range(1,max_epochs+1):
         mdl.train()
-        dev_acc, dev_loss, train_loss = 0.0, 0.0, 0.0
+        loss_dev, loss_train = 0.0, 0.0
         for batch in trainloader:
             sample = batch['sample'].to(device)
             target = batch['target'].long().to(device)
 
-            # Forward, backward, update
+            # zero the parameter gradients
             optimizer.zero_grad()
+
+            # forward + backward + optimize
             loss = criterion(mdl(sample),target)
             loss.backward()
             optimizer.step()
-            train_loss += loss.item()
+            loss_train += loss.item()
 
-        # Dev set evaluation
+        # Development Set Evaluation
         mdl.eval()
         for batch in devloader:
             sample = batch['sample'].to(device)
             target = batch['target'].long().to(device)
 
-            pred = mdl(sample)
-            loss = criterion(pred,target)
-            dev_loss += loss.item()
-            post = softmax(pred,dim=1)
-            (_, arg_max) = post.max(dim=1)
-            dev_acc += float((arg_max==target).sum())
-        dev_acc = round(dev_acc*100/dev_samples_num,3)
+            # forward
+            loss = criterion(mdl(sample),target)
+            loss_dev += loss.item()
 
         # Save training checkpoint and write to log
         if epoch in save_epochs:
-            fid = join(exp_dir,str(epoch)+'.pth')
-            save({'epoch': epoch, 'train_loss': loss,
+            fid = path.join(exp_dir,str(epoch)+'.pth')
+            torch.save({'epoch': epoch, 'train loss': loss,
                 'model_state_dict': mdl.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict()}, fid)
             with open(log, 'a') as log_fid:
                 print(f'Model saved into {fid}', file=log_fid)
             with open(log, 'a') as log_fid:
-                print(f'Epoch = {epoch}, train_loss = {train_loss}, dev_loss = {dev_loss}, dev_acc = {dev_acc}.', file=log_fid)
-            if dev_acc > final_acc:
-                final_acc = dev_acc
-                final_mdl = fid 
+                print(f'Epoch = {epoch}, loss_train = {loss_train}, loss_dev = {loss_dev}.', file=log_fid)
+            if loss_dev < loss_final:
+                loss_final = loss_dev
+                mdl_final = fid 
 
-    symlink(final_mdl, f'{exp_dir}/final.pth')
+    os.symlink(mdl_final, f'{exp_dir}/final.pth')
     print(f'Finished training model in {exp_dir}. Final model saved in {exp_dir}/final.pth.')

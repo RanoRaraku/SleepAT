@@ -3,8 +3,8 @@ Made by Michal Borsky, 2019, copyright (C) RU
 Acoustuc feature extraction library.
 """
 import numpy as np
-from sleepat.base.opts import SpectSlopeOpts
-from sleepat.dsp import pow_spect
+import sleepat
+from sleepat import dsp, opts
 
 def compute_spect_slope(sig, config:str=None, **kwargs) -> np.ndarray:
     """
@@ -22,10 +22,10 @@ def compute_spect_slope(sig, config:str=None, **kwargs) -> np.ndarray:
     Output :
         spect_slope ... numpy.ndarray(shape=(num_frames,num_bands))
     """
-    conf = SpectSlopeOpts(config,**kwargs)
+    conf = opts.SpectSlopeOpts(config,**kwargs)
 
     bins = np.round(conf.ss_bands*conf.wlen)
-    pow_frames = pow_spect(sig, conf.fs, conf.wlen, conf.wstep, conf.remove_dc, conf.wtype)
+    pow_frames = dsp.pow_spect(sig, conf.fs, conf.wlen, conf.wstep, conf.remove_dc, conf.wtype)
     log_frames = 10*np.log10(pow_frames + np.finfo(float).eps)
     spect_slope = np.zeros(shape=(pow_frames.shape[0],bins.shape[0]))
     for i in range(log_frames.shape[0]):

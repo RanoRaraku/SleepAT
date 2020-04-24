@@ -3,8 +3,8 @@ Made by Michal Borsky, 2019, copyright (C) RU
 Basic DPS library.
 """
 import numpy as np
-from .mel import mel
-from .invmel import invmel
+import sleepat
+from sleepat import dsp
 
 def melfb(mel_filts:int, fs:int, nfft:int, fmin:float, fmax:float) -> np.ndarray:
     """
@@ -22,14 +22,14 @@ def melfb(mel_filts:int, fs:int, nfft:int, fmin:float, fmax:float) -> np.ndarray
     if fmax > fs/2:
         fmax = fs/2
 
-    mel_points = np.linspace(mel(fmin), mel(fmax), mel_filts+2)
-    hz_points = invmel(mel_points)
+    mel_points = np.linspace(dsp.mel(fmin), dsp.mel(fmax), mel_filts+2)
+    hz_points = dsp.invmel(mel_points)
     bins = np.round(hz_points*nfft/fs).astype(np.uint32)
     Wmel = np.zeros(shape=(mel_filts, np.int(nfft/2 + 1)))
 
     for m in range(1, mel_filts+1):
-        k_up = np.arange(bins[m-1],bins[m])
-        k_down = np.arange(bins[m],bins[m+1])
+        k_up = range(bins[m-1],bins[m])
+        k_down = range(bins[m],bins[m+1])
 
         Wmel[m-1, k_up] = (k_up-bins[m-1])/(bins[m]-bins[m-1])
         Wmel[m-1, k_down] = (bins[m+1]-k_down)/(bins[m+1]-bins[m])

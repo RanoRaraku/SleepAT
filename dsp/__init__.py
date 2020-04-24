@@ -1,6 +1,7 @@
 from .bark import bark
 from .barkfb import barkfb
 from .delta import delta
+from .frame_to_time import frame_to_time
 from .invbark import invbark
 from .invmel import invmel
 from .mel import mel

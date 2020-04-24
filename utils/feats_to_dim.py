@@ -1,28 +1,21 @@
 """
 Made by Michal Borsky, 2019, copyright (C) RU
-
-Collection of utility routines to manipulate datasets, do checks.
-Some functions are generators and have return in loop.
 """
-import sleepat.io as io 
+import sleepat
+from sleepat import io
 
-def feats_to_dim(feats_scp) -> tuple:
+def feats_to_dim(feats_scp:dict) -> tuple:
     """
-    Returns feature dimension for each feature file in
-    feats_scp. We assume all feats have same size, so we
-    use return to break loop and return dimension of 1st file.
-    Also, we assume 0th dimesion is feature length.
-    Input:
-        feats_scp .... either an scp or a path to scp
-    Output:
-        feat_dim tuple
-    """
-    if isinstance(feats_scp,dict):
-        pass
-    else:
-        print('utils.feat_to_fim(): Wrong input type, expected dict.')
-        exit(1)
+    Returns feature dimension for each feature file in feats_scp.
+    We assume 0th dimesion is number of features and rest is feature
+    dimensions. Feature dimensions is a tuple to account for tensor
+    features.
 
-    for fid in feats_scp.values():
+    Arguments:
+        feats_scp .... scp file contianing utt_id and path to file
+         ... (default:bool = False)
+        tuple containing (utterance_id, feature dimensions)
+    """
+    for utt_id, fid in feats_scp.items():
         feats = io.read_npy(fid)
-        return feats.shape[1:]
+        yield (utt_id, feats.shape[1:])

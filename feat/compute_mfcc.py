@@ -3,9 +3,10 @@ Made by Michal Borsky, 2019, copyright (C) RU
 Acoustuc feature extraction library.
 """
 import numpy as np
-from scipy.fftpack import dct
-from sleepat.base.opts import MfccOpts
-from sleepat.dsp import melfb, preemphasis, pow_spect
+import scipy
+from scipy import fftpack
+import sleepat
+from sleepat import dsp, opts
 
 def compute_mfcc(sig, config:str=None, **kwargs) -> np.ndarray:
     """
@@ -28,15 +29,15 @@ def compute_mfcc(sig, config:str=None, **kwargs) -> np.ndarray:
     Output :
         numpy.ndarray(shape=(num_frames,nceps), dtype=numpy.float)
     """
-    conf = MfccOpts(config,**kwargs)
+    conf = opts.MfccOpts(config,**kwargs)
 
     nfft = np.around(conf.wlen*conf.fs).astype(np.uint16)
-    melfb = melfb(conf.mel_filts, conf.fs, nfft, conf.fmin, conf.fmax)
-    sig = preemphasis(sig, conf.preemphasis_alpha)
-    pow_frames = pow_spect(sig, conf.fs, conf.wlen, conf.wstep, conf.remove_dc, conf.wtype)
+    melfb = dsp.melfb(conf.mel_filts, conf.fs, nfft, conf.fmin, conf.fmax)
+    sig = dsp.preemphasis(sig, conf.preemphasis_alpha)
+    pow_frames = dsp.pow_spect(sig, conf.fs, conf.wlen, conf.wstep, conf.remove_dc, conf.wtype)
     fbanks = np.dot(pow_frames,melfb.T)
     if conf.use_log_fbank:
         fbanks = np.where(fbanks == 0, np.finfo(float).eps, fbanks)  # Numerical Stability
         fbanks = 10*np.log10(fbanks+np.finfo(float).eps)
-    mfcc = dct(fbanks, type=2, axis=1, norm='ortho')
+    mfcc = fftpack.dct(fbanks, type=2, axis=1, norm='ortho')
     return mfcc[:,:conf.nceps].astype(np.float32)

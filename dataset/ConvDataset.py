@@ -7,16 +7,15 @@ for feature processing. Feature processing happens during item fetching.
 Every Dataset class contains .to_dataloader() routine to convert in to
 PyTorch.*.DataLoader object for further functionality.
 """
-from os.path import join
+import os
+from os import path
 import numpy as np
-from torch import tensor, as_tensor     #pylint disable=no-name-in-module
-from torch.utils.data import Dataset, DataLoader
-from sleepat.utils import feats_to_len, feats_to_dim
-from sleepat.base.opts import ConvDatasetOpts, PyClassOpts
-from sleepat.io import read_scp, read_npy
-from sleepat.feat import add_delta, apply_mvn
+import torch
+from torch.utils import data
+import sleepat
+from sleepat import feat, io, opts, utils
 
-class ConvDataset(Dataset):
+class ConvDataset(data.Dataset):
     """
     Convolution dataset for PyTorch. The input is a data directory that contains
     feats.scp,targets.scp,spk2utt,utt2spk. All data is loaded to memory, so
@@ -44,24 +43,24 @@ class ConvDataset(Dataset):
             <delta_window> ... no +-context frames to delta computation (def:int = 2)
             <delta_order> ... order of delta coefficients (def:int = 2)
         <apply_mvs> ... whether to apply mean and variance subtraction (def: bool=False)
-            <norm_vars> ... whether to normaliza variances (def: bool=False)        
+            <norm_vars> ... whether to normaliza variances (def: bool=False)
         <apply_mvn> ... whethet to apply mean and variance normalization (def: bool=True)
             <norm_vars> ... whether to normaliza variances (def: bool=False)
         <<DataLoader args>> ... see torch.utils.data.DataLoader for args.
         config ... a configuration JSON file to specify all above
         **kwargs ... setting all above through kwargs
         """
-        self.conf = ConvDatasetOpts(config,**kwargs)
-        self.conf_DL = PyClassOpts(DataLoader,config,**kwargs)
-        self.feats_scp = read_scp(join(data_dir,'feats.scp'))
-        self.targets_scp = read_scp(join(data_dir,'targets.scp'))
-        self.mvn_scp = read_scp(join(data_dir,'mvn.scp'))
-        self.spk2utt = read_scp(join(data_dir,'spk2utt'))
-        self.utt2spk = read_scp(join(data_dir,'utt2spk'))
+        self.conf = opts.ConvDatasetOpts(config,**kwargs)
+        self.conf_DL = opts.PyClassOpts(data.DataLoader,config,**kwargs)
+        self.feats_scp = io.read_scp(path.join(data_dir,'feats.scp'))
+        self.targets_scp = io.read_scp(path.join(data_dir,'targets.scp'))
+        self.mvn_scp = io.read_scp(path.join(data_dir,'mvn.scp'))
+        self.spk2utt = io.read_scp(path.join(data_dir,'spk2utt'))
+        self.utt2spk = io.read_scp(path.join(data_dir,'utt2spk'))
 
         self.make_meta()
         self.set_sample_size()
-        self.set_feats_dim()
+        self.set_sample_dim()
         self.set_targets_dim()
         self.make_examples()
 
@@ -80,8 +79,8 @@ class ConvDataset(Dataset):
         frame_idx = self.meta[idx]['sample_idx']
         sample = self.feats[frame_idx-self.conf.context_left:
             frame_idx+self.conf.context_right+1]
-        return {"targets": as_tensor(self.targets[frame_idx]),
-            "sample": as_tensor(sample)}
+        return {"targets": torch.as_tensor(self.targets[frame_idx]),
+            "sample": torch.as_tensor(sample)}
 
     def make_meta(self):
         """
@@ -92,7 +91,7 @@ class ConvDataset(Dataset):
 
         db_idx = 0
         frames_num = 0
-        for utt_id, flen in feats_to_len(self.targets_scp):
+        for utt_id, flen in utils.feats_to_len(self.targets_scp):
             for frame_idx in range(self.conf.context_left, flen - self.conf.context_right):
                 self.meta[db_idx] = {'sample_idx': frame_idx+frames_num,'utt_frame':frame_idx, 'utt_id': utt_id}
                 db_idx += 1
@@ -117,7 +116,7 @@ class ConvDataset(Dataset):
         if len(self.targets_scp) == 0:
             print('SimpleDataset.set_targets_dim(): No targets for your dataset, (empty targets.scp?)')
             exit(1)
-        self.targets_dim = feats_to_dim(self.targets_scp)
+        self.targets_dim = utils.feats_to_dim(self.targets_scp)
 
     def set_sample_dim(self):
         """
@@ -127,7 +126,7 @@ class ConvDataset(Dataset):
         if len(self.feats_scp) == 0:
             print('SimpleDataset.set_sample_dim(): No samples in your dataset, (empty feats.scp?)')
             exit(1)
-        m = feats_to_dim(self.feats_scp)[0]
+        m = utils.feats_to_dim(self.feats_scp)[0]
         n = 1+self.conf.context_left+self.conf.context_right
 
         if self.conf.add_delta:
@@ -135,7 +134,6 @@ class ConvDataset(Dataset):
         if self.conf.apply_lda:
             m = self.conf.lda_dim
         self.sample_dim = (m,n)
-
 
     def make_examples(self):
         """
@@ -156,8 +154,8 @@ class ConvDataset(Dataset):
 
         beg = 0
         for utt_id, spk_id in self.utt2spk.items():
-            feats = read_npy(self.feats_scp[utt_id])
-            targets = read_npy(self.targets_scp[utt_id])
+            feats = io.read_npy(self.feats_scp[utt_id])
+            targets = io.read_npy(self.targets_scp[utt_id])
             if feats.shape[0] !=  targets.shape[0]:
                 print(f'SimpleDataset.make_examples(): No. feats does not match no. targets for {utt_id}.')
                 exit(1)
@@ -173,18 +171,18 @@ class ConvDataset(Dataset):
         Transform dataset into the DataLoader object. All dataloader
         arguments can be speficied in config.
         """
-        return DataLoader(self, **self.conf_DL.as_kwargs())
+        return data.DataLoader(self, **self.conf_DL.as_kwargs())
 
     def process_feats(self, feats, spk_id):
         """
         Custom feature processing chain, specific for each situation.
         """
         if self.conf.apply_mvs:
-            feats = apply_mvn(feats, norm_vars=self.conf.norm_vars)
-        if self.conf.apply_mvn:    
-            feats = apply_mvn(feats, self.mvn_scp[spk_id], norm_vars=self.conf.norm_vars)
-        if self.conf.add_delta:            
-            feats = add_delta(feats, delta_order=self.conf.delta_order,
+            feats = feat.apply_mvn(feats, norm_vars=self.conf.norm_vars)
+        if self.conf.apply_mvn:
+            feats = feat.apply_mvn(feats, self.mvn_scp[spk_id], norm_vars=self.conf.norm_vars)
+        if self.conf.add_delta:
+            feats = feat.add_delta(feats, delta_order=self.conf.delta_order,
                 delta_window=self.conf.delta_window)
         if self.conf.apply_lda:
             feats = feats

@@ -4,7 +4,6 @@ Made by Michal Borsky, 2019, copyright (C) RU
 Collection of utility routines to manipulate datasets, do checks.
 Some functions are generators and have return in loop.
 """
-
 def utt2spk_to_spk2utt(utt2spk:dict) -> dict:
     """
     Convert utt2spk to spk2utt. Uses converstion ->set

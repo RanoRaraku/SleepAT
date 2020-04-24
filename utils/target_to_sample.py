@@ -6,7 +6,6 @@
 import numpy as np
 import math
 
-
 def target_to_sample(target:np.ndarray, fs:float=8000, wstep:float=0.01, **kwargs):
     """
     Converts targets at frame level to targets at sample level.

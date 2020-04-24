@@ -1,12 +1,14 @@
 """
 Made by Michal Borsky, 2019, copyright (C) RU
 """
-import torch.nn as tnet
-from sleepat.base.opts import CnnSnoreOpts
+import torch
+from torch import nn as tnet
+import sleepat
+from sleepat import opts
 
 class CnnSnore(tnet.Module):
     def __init__(self, config:str=None, **kwargs):
-        conf = CnnSnoreOpts(config=config, **kwargs)
+        conf = opts.CnnSnoreOpts(config=config, **kwargs)
         super(CnnSnore, self).__init__()
         self.network = tnet.Sequential(
             tnet.Conv2d(in_channels=1, out_channels=conf.filts, kernel_size=(3,3), stride=(1,1)),

@@ -3,8 +3,8 @@ Made by Michal Borsky, 2019, copyright (C) RU
 Acoustuc feature extraction library.
 """
 import numpy as np
-from sleepat.base.opts import ApplyMvnOpts
-from sleepat.io import read_npy
+import sleepat
+from sleepat import io, opts
 
 def apply_mvn(feats, stats_file:str=None, config:str=None, **kwargs) -> np.ndarray:
     """
@@ -17,13 +17,13 @@ def apply_mvn(feats, stats_file:str=None, config:str=None, **kwargs) -> np.ndarr
     Output:
         np.ndarray(shape=(N, M), dtype=feats.dtype)
     """
-    conf = ApplyMvnOpts(config,**kwargs)
+    conf = opts.ApplyMvnOpts(config,**kwargs)
 
     if stats_file is None:
         mu = feats.mean(axis=0)
         sigma = feats.std(axis=0)
     else:
-        stats = read_npy(stats_file)
+        stats = io.read_npy(stats_file)
         mu = stats[0]
         sigma = stats[1]
 

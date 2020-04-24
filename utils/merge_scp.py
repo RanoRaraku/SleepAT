@@ -4,7 +4,8 @@ Made by Michal Borsky, 2019, copyright (C) RU
 Collection of utility routines to manipulate datasets, do checks.
 Some functions are generators and have return in loop.
 """
-import sleepat.io as io
+import sleepat
+from sleepat import io
 
 def merge_scp(*args,file_out:str) -> None:
     """

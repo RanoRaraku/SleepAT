@@ -4,7 +4,8 @@ Made by Michal Borsky, 2019, copyright (C) RU
 Collection of utility routines to manipulate datasets, do checks.
 Some functions are generators and have return in loop.
 """
-from sleepat.io import write_scp
+import sleepat
+from sleepat import io
 
 def create_conf(conf_file:str, **kwargs) -> None:
     """
@@ -17,4 +18,4 @@ def create_conf(conf_file:str, **kwargs) -> None:
     conf = dict()
     for key, value in kwargs.items():
         conf[key] = value
-    write_scp(conf_file, conf)
+    io.write_scp(conf_file, conf)

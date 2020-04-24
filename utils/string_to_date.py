@@ -4,6 +4,7 @@ Made by Michal Borsky, 2019, copyright (C) RU
 Collection of utility routines to manipulate datasets, do checks.
 Some functions are generators and have return in loop.
 """
+import datetime
 from datetime import datetime
 
 def string_to_date(string):

@@ -4,9 +4,9 @@ Made by Michal Borsky, 2019, copyright (C) RU
 Collection of utility routines to manipulate datasets, do checks.
 Some functions are generators and have return in loop.
 """
-from numpy import ndarray
+import numpy as np
 
-def segment_wave(wave:ndarray, fs:float=8000, segments:dict=None) -> ndarray:
+def segment_wave(wave:np.ndarray, fs:float=8000, segments:dict=None) -> np.ndarray:
     """
     Segment a waveform with the sampling frequency fs according to a dict of segments.
     We assume a segment is a dict of {'onset' = float, 'duration' = float, 'id' = string}.

@@ -2,14 +2,14 @@
 Made by Michal Borsky, 2019, copyright (C) RU
 Collection of high-level routines used to built whole projects.
 """
-from os import makedirs
-from os.path import isdir, isfile, join
-from random import shuffle
-import sleepat.utils as utils
-import sleepat.io as io
+import os
+from os import path
+import random
+import sleepat
+from sleepat import utils, io
 
 def split_data_per_speaker(data_dir:str, dst_dir:str=None,
-    subsets:list=['train','dev','eval'], ratio:list=[8,1,1]) -> None:
+    subsets:list=['train','dev','eval'], ratio:list=[8,1,1], no_feats:bool=True) -> None:
     """
     Splits the dataset per speaker into train, test, validation subsets
     with a specified ratio.The split is done according to spk2utt. The split
@@ -21,15 +21,19 @@ def split_data_per_speaker(data_dir:str, dst_dir:str=None,
         data_dir ... directory that contains utt2spk and other files to split
         dst_dir ... output directory (default:str = None)
         subsets ... (default:list = ['train','dev','eval'])
-        ratio ... (default:list = [8,1,1])
+        ratio ... data ratio across subsets (default:list = [8,1,1])
+        no_feats ... split products of feature extraction (default:bool = True)
     """
-    print(f'Splitting on per-utterance basis {data_dir}.')
+    print(f'Splitting {data_dir} on per-speaker basis.')
 
     ## Config section
-    files_to_split = ['utt2spk','annotation','feats.scp','targets.scp', 'periods']
-    spk2utt = io.read_scp(join(data_dir,'spk2utt'))
+    files_to_split = ['utt2spk','annotation','periods']
+    if not no_feats:
+        files_to_split += ['feats.scp','targets.scp','mvn.scp']
+
+    spk2utt = io.read_scp(path.join(data_dir,'spk2utt'))
     spk_list = list(spk2utt.keys())
-    shuffle(spk_list)
+    random.shuffle(spk_list)
     spk_num = len(spk_list)
     if len(spk_list) == 0:
         print('Error: empty spk2utt file.')
@@ -39,8 +43,8 @@ def split_data_per_speaker(data_dir:str, dst_dir:str=None,
 
     ## Create corresponding dirs
     for subset in subsets:
-        if not isdir(join(dst_dir,subset)):
-            makedirs(join(dst_dir,subset))
+        if not path.isdir(path.join(dst_dir,subset)):
+            os.makedirs(path.join(dst_dir,subset))
 
     ## Split speakers based on spk2utt
     subset_utt = dict()
@@ -54,29 +58,29 @@ def split_data_per_speaker(data_dir:str, dst_dir:str=None,
         remainder = idx_j - round(idx_j)
         idx_i = round(idx_j)
 
-    ## Handle wave.scp/segments
-    if isfile(join(data_dir,'segments')):
-        waves = io.read_scp(join(data_dir,'wave.scp'))
-        segments = io.read_scp(join(data_dir,'segments'))
-        seg2utt = utils.segments_to_seg2utt(segments)
+    ## Handle wave.scp/utt2seg
+    if path.isfile(path.join(data_dir,'utt2seg')):
+        waves = io.read_scp(path.join(data_dir,'wave.scp'))
+        utt2seg = io.read_scp(path.join(data_dir,'utt2seg'))
+        seg2utt = utils.utt2seg_to_seg2utt(utt2seg)
         for subset in subsets:
             subset_seg2utt = {utt: seg2utt[utt] for utt in subset_utt[subset]}
-            subset_segments = utils.seg2utt_to_segments(subset_seg2utt)
-            subset_wave = {utt: waves[utt] for utt in subset_segments}
-            io.write_scp(join(dst_dir,subset,'wave.scp'), subset_wave)
-            io.write_scp(join(dst_dir,subset,'segments'), subset_segments)
+            subset_utt2seg = utils.seg2utt_to_utt2seg(subset_seg2utt)
+            subset_wave = {utt: waves[utt] for utt in subset_utt2seg}
+            io.write_scp(path.join(dst_dir,subset,'wave.scp'), subset_wave)
+            io.write_scp(path.join(dst_dir,subset,'utt2seg'), subset_utt2seg)
     else:
         files_to_split.append('wave.scp')
 
     ## Split the rest of files
     for file in files_to_split:
-        if not isfile(join(data_dir,file)):
+        if not path.isfile(path.join(data_dir,file)):
             continue
-        scp = io.read_scp(join(data_dir,file))
+        scp = io.read_scp(path.join(data_dir,file))
         for subset in subsets:
-            dst_file = join(dst_dir,subset,file)
+            dst_file = path.join(dst_dir,subset,file)
             subset_scp = {utt: scp[utt] for utt in subset_utt[subset]}
             io.write_scp(dst_file,subset_scp)
             if file == 'utt2spk':
                 spk2utt = utils.utt2spk_to_spk2utt(subset_scp)
-                io.write_scp(join(dst_dir,subset,'spk2utt'),spk2utt)
+                io.write_scp(path.join(dst_dir,subset,'spk2utt'),spk2utt)
