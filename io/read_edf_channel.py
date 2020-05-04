@@ -16,11 +16,11 @@ def read_edf_channel(file:str, channel:str=None):
         wave .... extracted wavform
     """
     if not isinstance(file,str):
-        print('Wrong input type, expected string.')
+        print(f'{" ":3}Wrong input type, expected string.')
         exit(1)
 
     if not isinstance(channel,str):
-        print('Wrong input type, expected string.')
+        print(f'" ":3Wrong input type, expected string.')
         exit(1)
 
     fh = pyedflib.EdfReader(file)

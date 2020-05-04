@@ -22,5 +22,5 @@ def write_npy(file:str, data:np.ndarray=None, dtype:str='float32') -> None:
     if not isinstance(data,np.ndarray):
         print('io.write_npy(): Wrong input type, expected np.ndarray.')
         exit(1)
-
-    np.save(file, data.astype(dtype))
+        
+    np.save(file,data.astype(dtype))

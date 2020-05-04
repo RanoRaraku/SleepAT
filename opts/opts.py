@@ -30,7 +30,7 @@ class BaseOpts(object):
             #else:
             #    print(f'Warning, {self.__name__} has no attribute /{key}/.')
 
-    def update(self, config:str = None, kwargs:dict = {}):
+    def update(self, config:str = None, **kwargs):
         if config is not None:
             self.update_from_config(config)
         if kwargs:
@@ -39,56 +39,56 @@ class BaseOpts(object):
     def as_kwargs(self):
         return self.__dict__
 
-class PyClassOpts(BaseOpts):
+class PyClass(BaseOpts):
     def __init__(self, pyclass, config:str = None, **kwargs):
         spec = getargspec(pyclass)
         for i,val in enumerate(reversed(spec.defaults)):
             setattr(self,spec.args[-(i+1)],val)
-        self.update(config,kwargs)
+        self.update(config,**kwargs)
 
 #-----------------------------------------------------------------
 ## DSP Options
-class TimeToFrameOpts(BaseOpts):
+class TimeToFrame(BaseOpts):
     def __init__(self):
         self.wlen = 0.025
         self.wstep = 0.01
 
-class SegmentOpts(BaseOpts):
+class Segment(BaseOpts):
     def __init__(self):
-        self.register_from_opts(TimeToFrameOpts())
+        self.register_from_opts(TimeToFrame())
         self.fs = 8000.0
         self.remove_dc = True
         self.wtype = 'hamming'
 
-class SpectOpts(BaseOpts):
+class Spect(BaseOpts):
     def __init__(self):
-        self.register_from_opts(SegmentOpts())
+        self.register_from_opts(Segment())
 
-class PowSpectOpts(BaseOpts):
+class PowSpect(BaseOpts):
     def __init__(self):
-        self.register_from_opts(SegmentOpts())
+        self.register_from_opts(Segment())
 
-class PreemphOpts(BaseOpts):
+class Preemph(BaseOpts):
     def __init__(self):
         self.preemphasis_alpha=0.97
 
-class MelOpts(BaseOpts):
+class Mel(BaseOpts):
     def __init__(self):
         self.f = 0.0
 
-class InvMelOpts(BaseOpts):
+class InvMel(BaseOpts):
     def __init__(self):
         self.melf = 0.0
 
-class BarkOpts(BaseOpts):
+class Bark(BaseOpts):
     def __init__(self):
         self.f = 0.0
 
-class InvBarkOpts(BaseOpts):
+class InvBark(BaseOpts):
     def __init__(self):
         self.barkf = 0.0
 
-class MelfbOpts(BaseOpts):
+class Melfb(BaseOpts):
     def __init__(self):
         self.fs = 8000.0
         self.mel_filts = 22
@@ -96,126 +96,126 @@ class MelfbOpts(BaseOpts):
         self.fmax = self.fs/2
         self.nfft = 200
 
-class BarkfbOpts(BaseOpts):
+class Barkfb(BaseOpts):
     def __init__(self):
         self.fs = 8000.0
         self.fmin = 0.0
         self.fmax = self.fs/2
         self.nfft = 200
 
-class DeltaOpts(BaseOpts):
+class Delta(BaseOpts):
     def __init__(self):
         self.delta_window = 2
 
 
 ## Feat Options
-class FbankOpts(BaseOpts):
+class Fbank(BaseOpts):
     """
-    This is questionable as it loads options from MelfbOpts().
+    This is questionable as it loads options from Melfb().
     Maybe throw away whole module and include apply_dct option
     in respective methods.
     """
     def __init__(self, config:str = None, **kwargs):
         self.__name__ = 'FbankOpts'
-        self.register_from_opts(PreemphOpts())
-        self.register_from_opts(PowSpectOpts())
-        self.register_from_opts(MelfbOpts())
+        self.register_from_opts(Preemph())
+        self.register_from_opts(PowSpect())
+        self.register_from_opts(Melfb())
         self.fbank_type = 'melfb'
         self.use_log_fbank = True
-        self.update(config,kwargs)
+        self.update(config,**kwargs)
 
-class MfccOpts(BaseOpts):
+class Mfcc(BaseOpts):
     def __init__(self, config:str = None, **kwargs):
         self.__name__ = 'MfccOpts'
-        self.register_from_opts(PreemphOpts())
-        self.register_from_opts(PowSpectOpts())
-        self.register_from_opts(MelfbOpts())
+        self.register_from_opts(Preemph())
+        self.register_from_opts(PowSpect())
+        self.register_from_opts(Melfb())
         self.nceps = 13
         self.use_log_fbank = True
-        self.update(config,kwargs)
+        self.update(config,**kwargs)
 
-class BfccOpts(BaseOpts):
+class Bfcc(BaseOpts):
     def __init__(self, config:str = None, **kwargs):
         self.__name__ = 'BfccOpts'
-        self.register_from_opts(PreemphOpts())
-        self.register_from_opts(PowSpectOpts())
-        self.register_from_opts(BarkfbOpts())
+        self.register_from_opts(Preemph())
+        self.register_from_opts(PowSpect())
+        self.register_from_opts(Barkfb())
         self.nceps = 13
         self.use_log_fbank = True
-        self.update(config,kwargs)
+        self.update(config,**kwargs)
 
-class SpectSlopeOpts(BaseOpts):
+class SpectSlope(BaseOpts):
     def __init__(self, config:str = None, **kwargs):
         self.__name__ = 'SpectSlopeOpts'
-        self.register_from_opts(PowSpectOpts())
+        self.register_from_opts(PowSpect())
         self.ss_bands = [0, self.fs/2]
-        self.update(config,kwargs)
+        self.update(config,**kwargs)
 
-class C1Opts(BaseOpts):
+class C1(BaseOpts):
     def __init__(self, config:str = None, **kwargs):
         self.__name__ = 'C1Opts'
-        self.register_from_opts(SegmentOpts())
-        self.update(config,kwargs)
+        self.register_from_opts(Segment())
+        self.update(config,**kwargs)
 
-class AddDeltaOpts(BaseOpts):
+class AddDelta(BaseOpts):
     def __init__(self, config:str = None, **kwargs):
         self.__name__ = 'AddDeltaOpts'
-        self.register_from_opts(DeltaOpts())
+        self.register_from_opts(Delta())
         self.delta_order = 2
-        self.update(config,kwargs)
+        self.update(config,**kwargs)
 
-class SpliceFramesOpts(BaseOpts):
+class SpliceFrames(BaseOpts):
     def __init__(self, config:str = None, **kwargs):
         self.__name__ = 'SpliceFramesOpts'
         self.splice_left = 2
         self.splice_right = 2
         self.splice_mode = 'edge'
-        self.update(config,kwargs)
+        self.update(config,**kwargs)
 
-class ApplyLifterOpts(BaseOpts):
+class ApplyLifter(BaseOpts):
     def __init__(self, config:str = None, **kwargs):
         self.__name__ = 'SpliceLifterOpts'
         self.lifter_order = 22
-        self.update(config,kwargs)
+        self.update(config,**kwargs)
 
-class ApplyMvnOpts(BaseOpts):
+class ApplyMvn(BaseOpts):
     def __init__(self, config:str = None, **kwargs):
         self.__name__ = 'ApplyMvnOpts'
         self.norm_vars = False
-        self.update(config,kwargs)
+        self.update(config,**kwargs)
 
-class ApplyLdaOpts(BaseOpts):
+class ApplyLda(BaseOpts):
     def __init__(self, config:str = None, **kwargs):
         self.__name__ = 'ApplyLdaOpts'
         self.lda_dim = 40
-        self.update(config,kwargs)
+        self.update(config,**kwargs)
 
 ## Utils Options
-class AnnotToTargetsOpts(BaseOpts):
+class AnnotToTargets(BaseOpts):
     def __init__(self, config:str = None, **kwargs):
         self.__name__ = 'AnnotToTargetsOpts'
-        self.register_from_opts(TimeToFrameOpts())
-        self.update(config,kwargs)
+        self.register_from_opts(TimeToFrame())
+        self.update(config,**kwargs)
 
-class TargetsToAnnotOpts(BaseOpts):
+class TargetsToAnnot(BaseOpts):
     def __init__(self, config:str = None, **kwargs):
         self.__name__ = 'TargetsToAnnotOpts'
-        self.register_from_opts(TimeToFrameOpts())
+        self.register_from_opts(TimeToFrame())
         self.utt_timestamp = ''
         self.no_null = True
-        self.update(config,kwargs)
+        self.update(config,**kwargs)
 
-class SegmentDataOpts(BaseOpts):
+class SegmentData(BaseOpts):
     def __init__(self, config:str = None, **kwargs):
         self.__name__ = 'CreateSegmentsOpts'
         self.segm_len = 10.0
         self.segm_len_min = 1.0
         self.segm_len_max = 20.0
         self.not_wave = True
-        self.update(config,kwargs)
+        self.update(config,**kwargs)
 
 ## Dataset Options
-class SimpleDatasetOpts(BaseOpts):
+class SimpleDataset(BaseOpts):
     """
     Default options for SimpleDataset class used to train a
     DNN model. The DataLoader options are not here.
@@ -227,19 +227,19 @@ class SimpleDatasetOpts(BaseOpts):
         self.apply_mvs = False
         self.add_delta = True
         self.apply_lda = False
-        self.update(config,kwargs)
+        self.update(config,**kwargs)
 
         if self.splice_frames:
-            self.register_from_opts(SpliceFramesOpts())
+            self.register_from_opts(SpliceFrames())
         if self.apply_lda:
-            self.register_from_opts(ApplyLdaOpts())
+            self.register_from_opts(ApplyLda())
         if self.apply_mvn or self.apply_mvs:
-            self.register_from_opts(ApplyMvnOpts())
+            self.register_from_opts(ApplyMvn())
         if self.add_delta:
-            self.register_from_opts(AddDeltaOpts())
-        self.update(config,kwargs)
+            self.register_from_opts(AddDelta())
+        self.update(config,**kwargs)
 
-class ConvDatasetOpts(BaseOpts):
+class ConvDataset(BaseOpts):
     """
     Default options for ConvDataset class used to train a
     CNN model. The DataLoader options are not here.
@@ -252,25 +252,48 @@ class ConvDatasetOpts(BaseOpts):
         self.apply_mvs = False
         self.add_delta = True
         self.apply_lda = False
-        self.update(config,kwargs)
+        self.update(config,**kwargs)
 
         if self.apply_lda:
-            self.register_from_opts(ApplyLdaOpts())
+            self.register_from_opts(ApplyLda())
         if self.apply_mvn or self.apply_mvs:
-            self.register_from_opts(ApplyMvnOpts())
+            self.register_from_opts(ApplyMvn())
         if self.add_delta:
-            self.register_from_opts(AddDeltaOpts())
-        self.update(config,kwargs)
+            self.register_from_opts(AddDelta())
+        self.update(config,**kwargs)
+
+class PrepVSN_10048(BaseOpts):
+    """
+    Default options for prep_vsn10_048 method
+    used to process VSN-10-048 dataset.
+    """
+    def __init__(self, config:str = None, **kwargs):
+        self.__name__ = 'PrepVSN_10048'
+        self.scorings = ['ms_snore','ms_snore_v2']
+        self.bad_spk = ['']
+        self.use_period = 'analysis'
+        self.update(config,**kwargs)
+
+class FormatVSN_10048(BaseOpts):
+    """
+    Default options for format_vsn10_048 method
+    used to process VSN-10-048 dataset.
+    """
+    def __init__(self, config:str = None, **kwargs):
+        self.__name__ = 'FormatVSN_10048'
+        self.valid_events = ['snore_breath','breathing-effort']
+        self.channel = 'Audio'
+        self.update(config,**kwargs)
 
 ## Nnet Options
-class TrainMdlOpts(BaseOpts):
+class TrainMdl(BaseOpts):
     def __init__(self,config:str = None, **kwargs):
         self.__name__ = 'TrainMnnOpts'
         self.max_epochs = 100
         self.save_iters = [1,5,10,15,20,30,40,50,60,70,80,90,100]
-        self.update(config,kwargs)
+        self.update(config,**kwargs)
 
-class CnnSnoreOpts(BaseOpts):
+class CnnSnore(BaseOpts):
     def __init__(self,config:str = None, **kwargs):
         self.__name__='CnnSnoreOpts'
         self.in_dim = 39
@@ -279,9 +302,9 @@ class CnnSnoreOpts(BaseOpts):
         self.hid_dim = 512
         self.conv_layers = 2
         self.filts = 32
-        self.update(config,kwargs)
+        self.update(config,**kwargs)
 
-class DnnSnoreOpts(BaseOpts):
+class DnnSnore(BaseOpts):
     def __init__(self,config:str = None, **kwargs):
         self.__name__='DnnSnoreOpts'
         self.in_dim = 39
@@ -291,4 +314,4 @@ class DnnSnoreOpts(BaseOpts):
         self.dropout_prob = 0.5
         self.bottleneck = True
         self.bottleneck_dim = 40
-        self.update(config,kwargs)
+        self.update(config,**kwargs)

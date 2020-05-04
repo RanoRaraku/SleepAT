@@ -1,11 +1,12 @@
 """
 Made by Michal Borsky, 2019, copyright (C) RU
 
-Transforms prepared data into a PyTorch-native dataset. A dataset consists of 
-features, targets, spk2utt, utt2spk, mvn.scp, and optionally configuration
-for feature processing. Feature processing happens during item fetching.
-Every Dataset class contains .to_dataloader() routine to convert in to
-PyTorch.*.DataLoader object for further functionality.
+Transforms prepared data into a PyTorch-native dataset. A dataset
+consists of features, targets, spk2utt, utt2spk, mvn.scp, and
+optionally configuration for feature processing. Feature processing
+happens during item fetching. Every Dataset class contains
+.to_dataloader() routine to convert in to PyTorch.*.DataLoader
+object for further functionality.
 """
 import os
 from os import path

@@ -16,7 +16,7 @@ def segment_wave(wave:np.ndarray, fs:float=8000, segments:dict=None) -> np.ndarr
     Input:
         wave .... a np.ndarray with the raw waveform.
         fs .... sampling frequency in Hz, (default:float = 8000).
-        segments .... a dictionary of segments, see create.segments(), (default:dict = None).
+        segments .... a dictionary dictionaries, see create.segments(), (default:dict = None).
     Output:
         a tuple of (seg_id, seg_wave, seg_duration).
     """

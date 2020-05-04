@@ -2,6 +2,8 @@
 Made by Michal Borsky, 2019, copyright (C) RU
 Basic IO routines.
 """
+import os
+from os import path
 import json
 
 def read_scp(file:str) -> dict():
@@ -13,6 +15,10 @@ def read_scp(file:str) -> dict():
     """
     if not isinstance(file,str):
         print('Error: read_scp() expected string.')
+        exit(1)
+
+    if not path.isfile(file):
+        print(f'Error: file {file} not found.')
         exit(1)
 
     with open(file, 'r') as fh:

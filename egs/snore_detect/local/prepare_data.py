@@ -1,11 +1,11 @@
 """
 Made by Michal Borsky, 2019, copyright (C) RU
 """
-from os import makedirs
-from os.path import exists, join
-import sleepat.io as io
-import sleepat.utils as utils
-import sleepat.egs.snore_detector.local as local
+import os
+from os import path
+import sleepat
+from sleepat import io, utils
+import sleepat.egs.snore_detect.local as local
 
 def prepare_data(vsn_dir:str, dst_dir:str) -> None:
     """
@@ -28,27 +28,26 @@ def prepare_data(vsn_dir:str, dst_dir:str) -> None:
     null_spk = ['VSN-10-048-015']
     marta_scorings = ['ms_snore','ms_snore_v2']
     period_marker = 'analysis-period'
-    if not exists(vsn_dir):
+    if not path.isdir(vsn_dir):
         exit()
-    if not exists(dst_dir):
-        makedirs(dst_dir)
+    if not path.isdir(dst_dir):
+        os.makedirs(dst_dir)
 
     ## Create the wave.scp file (we extract wave later)
     wave,utt2spk,periods = dict(), dict(), dict()
     annot,utt2seg = dict(), dict()
-    print('Creating a list of edf files into %s' % join(dst_dir,'edf.scp'))
     for file in utils.list_files(vsn_dir,'.edf'):
         utt_id = file.split('.')[0]
         if utt_id in null_spk:
             pass
 
-        # Wave.scp file (we extract wave later)    
-        wave[utt_id] = {'file':join(vsn_dir,file)}
+        # Wave.scp file (we extract wave later)
+        wave[utt_id] = {'file':path.join(vsn_dir,file)}
         utt2spk[utt_id] = utt_id    # Utt_id is a also spk_id, there is 1 file per speaker
 
         # Annotation file from scoring.json
         events = list()
-        json_file = join(vsn_dir, utt_id+'.scoring.json')
+        json_file = path.join(vsn_dir, utt_id+'.scoring.json')
         for scoring in marta_scorings:
             events = events + local.parse_scoring(json_file,scoring)
         annot[utt_id] = events
@@ -63,9 +62,9 @@ def prepare_data(vsn_dir:str, dst_dir:str) -> None:
 
 
     # Dump on disk
-    io.write_scp(join(dst_dir,'wave.scp'),wave)
-    io.write_scp(join(dst_dir,'utt2spk'),utt2spk)
-    io.write_scp(join(dst_dir,'spk2utt'),utt2spk)
-    io.write_scp(join(dst_dir,'annotation'),annot)
-    io.write_scp(join(dst_dir,'utt2seg'),utt2seg)
-    io.write_scp(join(dst_dir,'periods'),periods)
+    io.write_scp(path.join(dst_dir,'wave.scp'),wave)
+    io.write_scp(path.join(dst_dir,'utt2spk'),utt2spk)
+    io.write_scp(path.join(dst_dir,'spk2utt'),utt2spk)
+    io.write_scp(path.join(dst_dir,'annotation'),annot)
+    io.write_scp(path.join(dst_dir,'utt2seg'),utt2seg)
+    io.write_scp(path.join(dst_dir,'periods'),periods)

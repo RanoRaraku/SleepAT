@@ -14,7 +14,7 @@ def segment(x, fs:float, wlen:float, wstep:float, remove_dc:bool, wtype:str) -> 
         wlen ... window length in seconds (default:float = 0.025)
         wstep ... window step in seconds (default:float = 0.01)
         wtype ... window type ("hamming"|"bartlett"|"blackman"|"hanning"|"rectangular")
-                (default:str = hamming)
+            (default:str = hamming)
         remove_dc ... removes offset, done on per-segment basis (default:bool = True)
     Output:
         frames ... numpy.ndarray(shape=(num_of_frames,flen), dtype=numpy.float32)

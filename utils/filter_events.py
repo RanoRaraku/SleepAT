@@ -11,9 +11,10 @@ def filter_events(events:list, key:str='', valid_values:str='') -> list:
     event is {'label', 'onset', 'duration'}, but it can contain more 'keys'. Look at
     make_annotation() for reference. However, the routine allows to search for a general 'key'
     with a valid value.
-    Input:
+    
+    Arguments:
         events .... a list of events where each event is a dictionary
-        key .... which key in the event should match the valid values (default:str = '')
+        key .... key to match with valid values (default:str = '')
         valid_values .... can be a string or a list (default:str = '')
     Output:
 
