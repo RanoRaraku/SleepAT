@@ -4,7 +4,7 @@ Basic DPS library.
 """
 import numpy as np
 
-def invbark(barkf:float) -> np.ndarray:
+def invbark(barkf:float) -> float:
     """
     Conversion from bark-freqency scale to linear frequency scale
     ------------------------------------------------------

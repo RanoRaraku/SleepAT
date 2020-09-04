@@ -8,8 +8,11 @@ from sleepat import dsp
 
 def melfb(mel_filts:int, fs:int, nfft:int, fmin:float, fmax:float) -> np.ndarray:
     """
-    Calculates mel-frequency filter bank.
-    -----------------------------------------------------------
+    Creates mel-frequency filter bank. The filters are triangular
+    in shape and have center freq. equdistantly placed on mel-freq.
+    scale. The output is a matrix of weights, where each row is one
+    filter.
+    ----------------------------------------------------------
     Input :
         M  ... number of filters (default: int=23)
         fs ... sampling rate (default: int=16e3)

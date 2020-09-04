@@ -24,12 +24,12 @@ def compute_mfcc(sig, config:str=None, **kwargs) -> np.ndarray:
         <fmin> ... minimal frequency (default: float = 0)
         <fmax> ... maximum frequency (default: float = fs/2)
         <nceps> ... num. of cepstral coefficients including 0th (default:int = 13)
-        config ...
-        **kwargs ...
+        config .... config file to pass optional args. <> (default:str=None)
+        **kwargs ... optional args. <>
     Output :
         numpy.ndarray(shape=(num_frames,nceps), dtype=numpy.float)
     """
-    conf = opts.MfccOpts(config,**kwargs)
+    conf = opts.Mfcc(config,**kwargs)
 
     nfft = np.around(conf.wlen*conf.fs).astype(np.uint16)
     melfb = dsp.melfb(conf.mel_filts, conf.fs, nfft, conf.fmin, conf.fmax)

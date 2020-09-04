@@ -7,7 +7,7 @@ import sleepat
 from sleepat import dsp
 
 def spect(x, fs:float, wlen:float, wstep:float, remove_dc:bool,
-    wtype:str) -> np.ndarray:
+        wtype:str) -> np.ndarray:
     """
     Computes magnitude spectrum of a signal with segmentation
     Input:
@@ -15,6 +15,9 @@ def spect(x, fs:float, wlen:float, wstep:float, remove_dc:bool,
         fs .... sampling frequency (default:float = 8000)
         wlen ... window length in seconds (default: float=0.025)
         wstep ... window step in seconds (default: float=0.01)
+        remove_dc ... removes offset, done on per-segment basis (default:bool = True)
+        wtype ... window type ("hamming"|"bartlett"|"blackman"|"hanning"|"rectangular")
+            (default:str = hamming)
     Output:
        mag_frames ... a numpy.ndarray that contains magnitude spectra of frames
     """

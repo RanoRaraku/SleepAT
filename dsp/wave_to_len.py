@@ -10,12 +10,10 @@ def wave_to_len(file:str,fs:float) -> float:
     Reads a data from an npy file and return waveform duration
     in seconds.
     Input:
-        file ... string or a list of files to load
-        fs ... sampling rate
+        file ... full path to a waveform saved as .npy
+        fs ... sampling rate in Hz
+    Output:
+        waveform length in seconds        
     """
-    if isinstance(file,str):
-        wave = io.read_npy(file)
-        return np.round(len(wave)/fs,5)
-    else:
-        print('utils.wave_to_len(): Wrong input type, expected string.')
-        exit(1)
+    wave = io.read_npy(file)
+    return np.round(len(wave)/fs,6)

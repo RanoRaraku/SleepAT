@@ -23,7 +23,7 @@ def compute_mvn_stats(feats_list:list) -> None :
         feats_list = [feats_list]
 
     if len(feats_list) == 0:
-        print('feat.compute_mvn_stats(): Feature list is empty.')
+        print('Error: feats list is empty.')
         exit()
 
     total = 0

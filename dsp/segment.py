@@ -9,7 +9,7 @@ def segment(x, fs:float, wlen:float, wstep:float, remove_dc:bool, wtype:str) -> 
     """
     Segments the signal into frames and applies a window function.
     Input:
-        x  .... a (t,1) numpy.ndarray
+        x  .... input signal as (t,1) numpy.ndarray
         fs .... sampling frequency (default:float = 8000)
         wlen ... window length in seconds (default:float = 0.025)
         wstep ... window step in seconds (default:float = 0.01)
@@ -17,12 +17,12 @@ def segment(x, fs:float, wlen:float, wstep:float, remove_dc:bool, wtype:str) -> 
             (default:str = hamming)
         remove_dc ... removes offset, done on per-segment basis (default:bool = True)
     Output:
-        frames ... numpy.ndarray(shape=(num_of_frames,flen), dtype=numpy.float32)
+        frames ... signal frames oragnized as a matrix of shape=(num_of_frames,flen)
     """
     flen = math.ceil(wlen*fs)
     fstep = math.ceil(wstep*fs)
     fnum = math.floor((len(x)-flen)/fstep) + 1
-    frames = np.zeros(shape=(fnum,flen),dtype = np.float32)
+    frames = np.zeros(shape=(fnum,flen),dtype=np.float32)
 
     if wtype == 'rectangular':
         win = np.ones(shape=(flen,1))

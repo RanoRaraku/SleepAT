@@ -8,8 +8,11 @@ from sleepat import dsp
 
 def barkfb(fs:int, nfft:int, fmin:float, fmax:float) -> np.ndarray:
     """
-    Calculates bark-frequency filter bank.
-    ------------------------------------------------
+    Calculates bark-frequency filter bank. The filters are trapeziodal
+    in shape and have center freq. equdistantly placed on bark-freq.
+    scale. The output is a matrix of weights, where each row is one
+    filter.
+    ----------------------------------------------
     Input :
         fs ... sampling rate (default: int=16e3)
         nfft  ... DFT points (default: int=512)

@@ -1,4 +1,3 @@
-import sleepat.dataset
 import sleepat.dsp
 import sleepat.feat
 import sleepat.io

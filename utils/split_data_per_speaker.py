@@ -1,6 +1,6 @@
 """
 Made by Michal Borsky, 2019, copyright (C) RU
-Collection of high-level routines used to built whole projects.
+General routine to split dataset on per-subject basis.
 """
 import os
 from os import path
@@ -27,7 +27,7 @@ def split_data_per_speaker(data_dir:str, dst_dir:str=None,
     print(f'Splitting {data_dir} on per-speaker basis.')
 
     ## Config section
-    files_to_split = ['utt2spk','annotation','periods']
+    files_to_split = ['utt2spk','annot','periods']
     if not no_feats:
         files_to_split += ['feats.scp','targets.scp','mvn.scp']
 

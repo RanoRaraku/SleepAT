@@ -24,15 +24,14 @@ def compute_bfcc(sig, config:str=None, **kwargs) -> np.ndarray:
         <fmax> ... maximum frequency (default: float = fs/2)
         <nceps> ... number of coefficients including 0th (default: int = 13)
         <use_log_fbank> .... use log on fbank energies (default:bool = True)
-        config ...
-        **kwargs ...
+        config ... config file to load optional arguments (default:str = None)
+        **kwargs ... optional arguments
     Output :
         numpy.ndarray(shape=(num_frames,nceps), dtype=numpy.float)
     """
-    conf = opts.BfccOpts(config=config, **kwargs)
-
+    conf = opts.Bfcc(config=config, **kwargs)
     conf.nfft = np.around(conf.wlen*conf.fs).astype(np.uint16)
-    #sig = dsp.preemphasis(sig, conf.preemphasis_alpha)
+
     pow_frames = dsp.pow_spect(sig, conf.fs, conf.wlen, conf.wstep, conf.remove_dc, conf.wtype)
     fbank = dsp.barkfb(conf.fs, conf.nfft, conf.fmin, conf.fmax)
     fbank_feats = np.dot(pow_frames,fbank.T)

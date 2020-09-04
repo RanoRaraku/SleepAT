@@ -1,17 +1,20 @@
 """
-Made by Michal Borsky, 2019, copyright (C) RU
-Basic IO routines.
+Made by Michal Borsky, 2019, copyright (C) RU.
+Basic utils routine.
 """
 import os
 
 def list_files(directory:str, extension:str='') -> list():
     """
-    Searches directory for files with a specified extension.
+    Searches directory for files with a specified extension. Only the
+    file names are returned, not fully specified path.
     Input:
-        dir .... a directory to search
-        extentsion .... extension to search for. Leave blank for everything.
+        directory .... a directory to search
+        extentsion .... extension to filter, leave blank for everything.
     Output:
-        file_list ....
+        file_list ... a list of files
+    Use:
+
     """
     if not isinstance(directory,str):
         print('Wrong input type, expected string.')
@@ -23,6 +26,8 @@ def list_files(directory:str, extension:str='') -> list():
 
     file_list = list()
     for file in os.listdir(directory):
+        if not os.path.isfile(os.path.join(directory,file)):
+            continue
         if file.endswith(extension):
             file_list.append(file)
     file_list.sort()

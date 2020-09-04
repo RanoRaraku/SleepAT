@@ -16,7 +16,7 @@ def segment_wave(wave:np.ndarray, fs:float=8000, segments:dict=None) -> np.ndarr
     Input:
         wave .... a np.ndarray with the raw waveform.
         fs .... sampling frequency in Hz, (default:float = 8000).
-        segments .... a dictionary dictionaries, see create.segments(), (default:dict = None).
+        segments .... a dictionary of dictionaries, see create.segments(), (default:dict = None).
     Output:
         a tuple of (seg_id, seg_wave, seg_duration).
     """
@@ -27,7 +27,6 @@ def segment_wave(wave:np.ndarray, fs:float=8000, segments:dict=None) -> np.ndarr
         seg_beg = int(item['onset']*fs)
         seg_end = int((item['onset']+item['duration'])*fs)
         if  seg_end > len(wave):
-            print(f'utils.segment_wave(): segment {seg_id} is longer than waveform.')
-            exit()
-        else:
-            yield (seg_id, wave[seg_beg:seg_end])
+            seg_end = len(wave)
+            print(f'{" ":3}Warning: segment {seg_id} is longer than waveform.')
+        yield (seg_id, wave[seg_beg:seg_end])

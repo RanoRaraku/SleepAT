@@ -25,7 +25,8 @@ def segment_periods(periods:dict, segments:dict=None) -> tuple:
     if segments is None or len(segments) == 0:
         return ('0000', periods)
 
-    for segm_id, segm in segments.items():
-        segm_start = utils.string_to_date(periods['start']) + timedelta(seconds = segm['onset'])
-        segm_period = {'start':utils.date_to_string(segm_start),'duration':segm['duration']}
-        yield (segm_id, segm_period)
+    for seg_id, seg in segments.items():
+        seg_start = utils.string_to_date(periods['start']) + timedelta(seconds = seg['onset'])
+        seg_period = seg
+        seg_period['start'] = utils.date_to_string(seg_start)
+        yield (seg_id, seg_period)

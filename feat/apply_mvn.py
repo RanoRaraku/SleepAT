@@ -17,7 +17,7 @@ def apply_mvn(feats, stats_file:str=None, config:str=None, **kwargs) -> np.ndarr
     Output:
         np.ndarray(shape=(N, M), dtype=feats.dtype)
     """
-    conf = opts.ApplyMvnOpts(config,**kwargs)
+    conf = opts.ApplyMvn(config,**kwargs)
 
     if stats_file is None:
         mu = feats.mean(axis=0)

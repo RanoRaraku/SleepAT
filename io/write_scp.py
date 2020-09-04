@@ -14,7 +14,7 @@ def write_scp(file:str, scp:dict=None) -> None:
     Feats.scp maps between utt_id and files that contain extracted features.
     Segments maps between utt_it and segments that will be cut out prior to feature extraction.
     Annotation maps between utt_id and all scored events used to crate target.scp.
-    Target.scp maps between utt_it and files that contain targets for each feature file. 
+    Target.scp maps between utt_it and files that contain targets for each feature file.
     Input:
         file .... path to the output file
         content .... a dictionary of the format dict[utt_id] = value (default:dict = None)

@@ -1,7 +1,3 @@
-Part of dataset was manually scored by Marta Sewartko specifically for this purpose.
-The subsets "train_set" and "test_set" are given and core for supervised training.
-The remaining subjects can be used for semi-supervised training as we have no realiable
-labels for them. Things are stored in numpy arrays and json formats to ensure
-compatibility and possibility to use other toolkits other than pyTorch.
+Project for cought detection.
 
 

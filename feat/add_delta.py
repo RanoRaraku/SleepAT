@@ -6,7 +6,7 @@ import numpy as np
 import sleepat
 from sleepat import dsp, opts
 
-def add_delta(feats, config:str=None, **kwargs) -> np.ndarray:
+def add_delta(feats:np.ndarray, config:str=None, **kwargs) -> np.ndarray:
     """
     Adds dynamic features to feature array. Edge values are repeated
     to maintain feature dimension. Dynamic features are concatenated
@@ -14,22 +14,22 @@ def add_delta(feats, config:str=None, **kwargs) -> np.ndarray:
     Optional arguments can be passed in a config file or as kwargs.
 
     Arguments:
-        feats ... a feature vector of np.ndarray(shape=(N,M)) type.
+        feats ... array of values of np.ndarray(shape=(m,n)) shape
         <delta_order> ... order of delta coefficients (default:int = 2)
         <delta_window> ... no +-context frames to delta computation (default:int = 2)
         config ... configuration file with optional arguments (default:str=None)
         **kwargs ... optional arguments passed as kwargs
 
-        out ... array with static and dynamic features, shape=(M,(N+1)*order)
+        out ... array with static and dynamic features, shape=(m,(n+1)*order)
     """
-    conf = opts.AddDeltaOpts(config,**kwargs)
+    conf = opts.AddDelta(config,**kwargs)
     if conf.delta_order < 1:
-        raise ValueError('Order must be an integer >= 1')
-    (M,N) = feats.shape
+        raise ValueError('Delta order must be an integer >= 1')
+    (m,n) = feats.shape
 
-    out = np.empty(shape=(M,N*(conf.delta_order+1)),dtype=feats.dtype)
-    out[0:M,0:N] = feats
+    out = np.empty(shape=(m,n*(conf.delta_order+1)),dtype=feats.dtype)
+    out[0:m,0:n] = feats
     for j in range(1, conf.delta_order+1):
-        dynamic = dsp.delta(out[:,N*(j-1):N*j],conf.delta_window)
-        out[0:M,N*j:N*(j+1)] = dynamic
+        dynamic = dsp.delta(out[:,n*(j-1):n*j], conf.delta_window)
+        out[0:m,n*j:n*(j+1)] = dynamic
     return out

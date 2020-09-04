@@ -22,10 +22,10 @@ def splice_frames(feats, config:str=None, **kwargs) -> np.ndarray:
     Output:
         np.ndarray(shape=(N, M*(left+right+1)))
     """
-    conf = opts.SpliceFramesOpts(config,**kwargs)
+    conf = opts.SpliceFrames(config,**kwargs)
     (M, N) = feats.shape
     if (conf.splice_left < 0 ) or (conf.splice_right < 0):
-        raise ValueError('Error: Left and right context must be >= 0')   
+        raise ValueError('Error: Left and right context must be >= 0')
     if (conf.splice_left+conf.splice_right) >= M:
         print(f'Error: Left + Right context >= to feature size({M}).')
         exit(1)

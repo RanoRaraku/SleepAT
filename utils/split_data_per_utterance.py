@@ -27,7 +27,7 @@ def split_data_per_utterance(data_dir:str, dst_dir:str=None,
     print(f'Splitting on per-utterance basis {data_dir}.')
 
     ## Config section
-    files_to_split = ['utt2spk','annotation','periods']
+    files_to_split = ['utt2spk','annot','periods']
     if not no_feats:
         files_to_split.append('feats.scp','targets.scp','mvn.scp')
     utt2spk = io.read_scp(path.join(data_dir,'utt2spk'))

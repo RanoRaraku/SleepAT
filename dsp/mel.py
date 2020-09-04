@@ -4,11 +4,11 @@ Basic DPS library.
 """
 import numpy as np
 
-def mel(f:float) -> np.ndarray:
+def mel(f:float) -> float:
     """
-    Conversion from linear frequency to mel-freqency scale
+    Conversion from linear frequency to mel-freqency scale.
     ------------------------------------------------------
-    Input : f .... frequency in Hz, (default: float=0.0)
+    Input : f .... frequency in Hz
     Output: melf .... frequency in mel
     """
     return 2595*np.log10(1+f/700)
