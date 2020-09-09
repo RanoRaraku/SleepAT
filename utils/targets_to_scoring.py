@@ -55,7 +55,7 @@ def targets_to_scoring(targets:np.ndarray, post:np.ndarray, events:dict, config:
         label = events_inv[targets[beg]]
         onset = round(dsp.frame_to_time(beg, conf.wstep),6)
         dur = round(dsp.frame_to_time(end - beg, conf.wstep),6)
-        start = utils.date_to_string(utils.string_to_date(conf.tstamp) 
+        start = utils.date_to_string(utils.string_to_date(conf.tstamp)
             + timedelta(seconds=onset))
         scoring += [{'label':label, 'start':start, 'onset':onset, 'duration':dur}]
     return scoring

@@ -47,6 +47,6 @@ def add_null_events(scoring:list, period:dict) -> list:
         dur = round(scoring_dur - onset,6)
         start = utils.date_to_string(utils.string_to_date(scoring_start)
             + timedelta(seconds=onset))
-        scoring_null += [{'label':'null','start':start,'onset':onset, 'duration':dur}]        
+        scoring_null += [{'label':'null','start':start,'onset':onset, 'duration':dur}]
 
     return scoring_null

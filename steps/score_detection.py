@@ -11,7 +11,6 @@ def score_detection(data_dir:str, lang_dir:str, decode_dir:str) -> None:
     """
     Evaluate detection performance which is understood as classification and localization
     problem.
-
     """
     # Checks and file loading
     for item in [data_dir,lang_dir,decode_dir]:

@@ -7,7 +7,7 @@ Some functions are generators and have return in loop.
 import sleepat
 from sleepat import io
 
-def merge_scp(*args,scp_out:str) -> None:
+def merge_scp(*args, scp_out:str) -> None:
     """
     Merges a number of scp files into one scp. The values in merged
     scp are stored in a list. Different keys can have different no.
@@ -33,5 +33,5 @@ def merge_scp(*args,scp_out:str) -> None:
             if key in merged:
                 merged[key].append(item)
             else:
-                merged[key] = [item] 
+                merged[key] = [item]
     io.write_scp(scp_out, merged)

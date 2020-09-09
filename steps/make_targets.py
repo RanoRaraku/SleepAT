@@ -40,8 +40,7 @@ def make_targets(data_dir:str, lang_dir:str, targets_dir:str, config:str=None, *
     targets = dict()
     for utt_id in utt2spk:
         tgt_fid = path.join(targets_dir, f'{utt_id}.target.npy')
-        tgt = utils.scoring_to_targets(annot[utt_id], periods[utt_id], events,
-            config=config, **kwargs)
+        tgt = utils.scoring_to_targets(annot[utt_id], periods[utt_id], events, config=config, **kwargs)
         io.write_npy(tgt_fid, tgt)
         targets[utt_id] = tgt_fid
     io.write_scp(path.join(data_dir,'targets.scp'), targets)

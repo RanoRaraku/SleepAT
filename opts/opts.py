@@ -266,7 +266,7 @@ class PrepVSN_10048(BaseOpts):
     def __init__(self, config:str=None, **kwargs):
         self.__name__ = 'PrepVSN_10048'
         self.scorings = ['ms_snore','ms_snore_v2']
-        self.bad_spk = ['VSN-10-048-015']
+        self.bad_spk = ['']
         self.use_period = 'analysis'
         self.update(config,**kwargs)
 

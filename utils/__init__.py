@@ -20,6 +20,7 @@ from .spk2utt_to_utt2spk import spk2utt_to_utt2spk
 from .split_data_per_utterance import split_data_per_utterance
 from .split_data_per_speaker import split_data_per_speaker
 from .string_to_date import string_to_date
+from .synchronize_scorings import synchronize_scorings
 from .targets_to_scoring import targets_to_scoring
 from .utt2spk_to_spk2utt import utt2spk_to_spk2utt
 from .validate_data import validate_data

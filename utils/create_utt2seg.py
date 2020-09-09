@@ -15,7 +15,7 @@ def create_utt2seg(data_dir:str, seg_len:float) -> None:
     """
     Creates a utt2seg file that specifies how to segment wave files into non-overlapping
     chunks. The file is saved in data_dir. The script expects wave.scp and annotation to
-    make sure the segment doesn't cut an event in half. In order to speed up the search, 
+    make sure the segment doesn't cut an event in half. In order to speed up the search,
     we transform annotation to simple event boundaries. Script expects seg_len, seg_eps
     and wave duration in wave.scp to use the same units (i.e. seconds).
     Input:

@@ -19,8 +19,7 @@ from os import path
 import sleepat
 from sleepat import io, utils, opts
 
-def format_vsn_10048(src_dir:str, dst_dir:str, wave_dir:str, config:str=None,
-    **kwargs) -> None:
+def format_vsn_10048(src_dir:str, dst_dir:str, wave_dir:str, config:str=None, **kwargs) -> None:
     """
     Converts prepared data in src_dir to a standardized format. Script
     extracts specified channel from and HDF5 container and saves them
@@ -57,7 +56,6 @@ def format_vsn_10048(src_dir:str, dst_dir:str, wave_dir:str, config:str=None,
     annot_new = dict()
     utt2spk_new = dict()
     for utt_id in utt2spk:
-        print(f'Processing utterance {utt_id}.')
         (fs,wave) = io.read_hdf5(waves[utt_id]['file'],conf.channel)
         scoring = utils.filter_scoring(annot[utt_id],'label',conf.valid_events)
 
