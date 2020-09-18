@@ -65,7 +65,7 @@ def format_vsn_10048(src_dir:str, dst_dir:str, wave_dir:str, config:str=None, **
             utt2spk_new[segm_id] = utt_id
             io.write_npy(file, segm_wave)
 
-        for segm_id,segm_events in utils.segment_scoring(scoring,utt2seg[utt_id]):
+        for segm_id, segm_events in utils.segment_scoring(scoring,utt2seg[utt_id]):
             annot_new[segm_id] = segm_events
 
     # Dump on disk

@@ -28,7 +28,6 @@ def synchronize_scorings(*args) -> list:
         print(f'Warning: a single (scoring,period) supplied.')
         return(args[0])
 
-
     # Find bounds of new period
     end = 0.0
     onset = float('inf')

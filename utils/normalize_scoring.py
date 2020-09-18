@@ -26,13 +26,7 @@ def normalize_scoring(scoring:list, period:dict, events:dict) -> list:
         events ... mapping between numerical and text labels of events
     Return:
         normalized scoring
-
-    Todo:
-        load 'null' label from a file instead of hardcoding is to 'null'
     """
-    beg = 0.0
-    events_inv = dict()
-    scoring_norm = list()
     scoring_dur = period['duration']
     scoring_start = period['start']
 
@@ -45,6 +39,8 @@ def normalize_scoring(scoring:list, period:dict, events:dict) -> list:
 
     # 1) Adds null events to a scoring
     # 2) Solve overlapping events
+    beg = 0.0    
+    scoring_norm = list()
     for event in scoring:
         if event['onset'] < beg:
             event['duration'] -= (beg - event['onset'])
@@ -66,7 +62,7 @@ def normalize_scoring(scoring:list, period:dict, events:dict) -> list:
         scoring_norm += [{'label':'null','start':start,'onset':onset, 'duration':dur}]
 
 
-    # 2) Normalize text labels
+    # 2) Normalize text labels    
     events_inv = dict()
     for key,val in events.items():
         if val in events_inv and key != 'null':
