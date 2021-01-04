@@ -6,7 +6,7 @@ import numpy as np
 
 def compute_metrics(score:np.ndarray) -> dict:
     """
-    Compute standard performance measures of multiclass detection. The input is a 
+    Compute standard performance measures of multiclass detection. The input is a
     numpy array of hits, misses, false alarms, confusion in this order. All values
     are non-negative and at least 1 item is > 0.
 
