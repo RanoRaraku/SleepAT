@@ -5,6 +5,8 @@ Collection of utility routines to manipulate datasets, do checks.
 Some functions are generators and have return in loop.
 """
 import numpy as np
+import sleepat
+from sleepat import utils
 
 def segment_wave(wave:np.ndarray, fs:float=8000, segments:dict=None) -> np.ndarray:
     """
@@ -23,9 +25,9 @@ def segment_wave(wave:np.ndarray, fs:float=8000, segments:dict=None) -> np.ndarr
     if segments is None or len(segments) == 0:
         return ('0000', wave)
 
-    for seg_id, item in segments.items():
-        seg_beg = int(item['onset']*fs)
-        seg_end = int((item['onset']+item['duration'])*fs)
+    for seg_id, seg in segments.items():
+        seg_beg = int(seg['onset']*fs)
+        seg_end = int((seg['onset']+seg['duration'])*fs)
         if  seg_end > len(wave):
             seg_end = len(wave)
             print(f'{" ":3}Warning: segment {seg_id} is longer than waveform.')

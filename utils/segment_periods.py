@@ -4,10 +4,8 @@ Made by Michal Borsky, 2019, copyright (C) RU
 Collection of utility routines to manipulate datasets, do checks.
 Some functions are generators and have return in loop.
 """
-import datetime
-from datetime import timedelta
 import sleepat
-from sleepat import utils
+from sleepat import utils, objects
 
 def segment_periods(periods:dict, segments:dict=None) -> tuple:
     """
@@ -25,8 +23,7 @@ def segment_periods(periods:dict, segments:dict=None) -> tuple:
     if segments is None or len(segments) == 0:
         return ('0000', periods)
 
-    for seg_id, seg in segments.items():
-        seg_start = utils.string_to_date(periods['start']) + timedelta(seconds = seg['onset'])
+    for seg_id, seg in segments.items():      
         seg_period = seg
-        seg_period['start'] = utils.date_to_string(seg_start)
+        seg_period['start'] = objects.TimeStamp(stamp=periods['start'], offset=seg['onset']).print()
         yield (seg_id, seg_period)

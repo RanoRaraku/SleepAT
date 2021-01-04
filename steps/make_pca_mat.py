@@ -4,7 +4,7 @@ Acoustuc feature extraction library.
 """
 import os
 from os import path
-import sleepat 
+import sleepat
 from sleepat import io, feat, opts
 
 

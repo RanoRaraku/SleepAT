@@ -1,73 +1,104 @@
 """
-Made by Michal Borsky, 2019, copyright (C) RU
-Compute detection error between a reference and hypothesis given their alignment
+Made by Michal Borsky, 2020, copyright (C) RU
+Compute identification/detection error rate between reference and hypothesis.
 """
 import numpy as np
+import scipy
+from scipy import ndimage
 
-def compute_der(ref:list, hyp:list, ali:list, events:dict, thr:float=2/3) -> tuple:
+def compute_der(ref:list, hyp:list, events:dict, thr:float = 2/3) -> dict:
     """
-    Compute localization and classification errors for a detector. Inputs are 'ref', 'hyp',
-    and 'ali' dicts which use the same utt_id keys. One can supply a threshold for positive
-    detection. 'Events' dict and 'exclude_event' can be supplied to exclude 'event' type from
-    error summary. Regarding classification, an event is correctly (C) detected if metric >=
-    'threshold' and the labels match. Misses consist of substitutions (S), insertions (I), and
-    deletions (D). The definitions are as:
-    C if 
-    S if 
-    I if 
-    D if
-    These flags are added to 'ali' and the updated dict is returned. The classification
-    error is expressed as precision and recall for each event class separatelly. Null events
-    are omitted by default. The return values are a summary across all utterances in 
-    ref/hyp/ali. 'Null' events are excluded from evaluation.
+    Compute detection error at an event level. Inputs are 'ref', 'hyp', which are
+    lists, 'events' which is a dict. Each event in hyp/ref  has 'onset', duration',
+    and 'label' keys defined, i.e. {'label':snore, 'onset':0.0, 'duration': 1.0}. Events
+     maps between event labels (string) event symbols (int) i.e. {'snore':1}. Threshold
+    can be used to set a minimal value for successful detection, thr = 0 means any 
+    non-zero overlap is a hit. All event types in ref and hyp are included in evaluation,
+    remove events that are not to be scored before. Ref/hyp/events can't be empty, but
+    they can be of unequal length. The implementation assumes events are chronologically
+    ordered and don't overlap.
 
-    The localization error assesses boundary placement (beg/end), for correctly detected
-    events only. Values are mean absolute deltas in time units the events use. Formulas:
-    beg_prec = mean(|ref_beg - hyp_beg|)
-    end_prec = mean(|ref_end - hyp_end|)
-
+    Align ref/hyp using relative length of overlap (LoO), record (ref_i), (hyp_j) indexes,
+    LoO value. The decision labels:
+    Hit        : LoO > trh && event labels match
+    Confusion  : LoO > trh && event labels don't match
+    Miss       : LoO < trh && event is from ref
+    False Alarm: LoO < trh && event is from hyp
+    
     Arguments:
-        ref ... a dict with utt_ids with refated events
-        hyp ... a dict with utt_ids with predicted events
-        ali ... a dict with utt_ids with alingment betweet ref and hyp
-        events ...  maps event text labels to numerical values
-        threshold ... metric threshold for positive detection (def:float = 2/3)
+        ref ... a list of dicts indexed by utt_id with reference events
+        hyp ... a list of dicts indexed by utt_id with hypothesis events
+        events ...  maps event labels (str) to symbols (int)
+        thr ... threshold for successful detection (def:float = 2/3)
     Return:
-        tuple of (ali updated with decisions, results)
-    ToDo
-        try i,j,k indexing
-        remove duplicate items from alignmenet        
+        score as numpy array (H/M/FA/C)
     """
     # Checks
-    required = [ref, hyp, ali, events]
-    for item in required:
+    for item in [ref,events]:
         if not item:
-            print(f'Error: {item} is empty.')
+            print(f'Error compute_der(): {item} is empty.')
             exit(1)
-    if thr < 0:
-        print(f'Error: thr is < 0 ({thr}).')
+    for item in [ref,hyp]:
+        if not isinstance(item,list):
+            print(f'Error compute_der(): {item} is not a list.')
+            exit(1)
+    if not isinstance(events,dict):
+        print(f'Error compute_der(): events is not a dict.')
         exit(1)
+    if thr < 0:
+        print(f'Error compute_der(): thr < 0.')
+        exit(1)
+    if not hyp:
+        return np.array([0,len(ref),0,0],dtype=np.uint32)
 
-    # Accumulate stats
-    sym2int = {'H':0, 'M':1, 'I':2, 'S':3}
-    hmis = [0,0,0,0]
-    for pair in ali:
-        (score,ref_idx,hyp_idx) = (pair['score'],pair['ref_idx'],pair['hyp_idx'])
-        if score >= thr:
-            (lref,lhyp) = (ref[ref_idx]['label'],hyp[hyp_idx]['label'])
-            if lref == lhyp:
-                flag = 'H'
-            else:
-                flag = 'S'
+
+
+    # Compute cost matrix, negative costs (no-overlap) are set to 0
+    (reflen,hyplen) = len(ref),len(hyp)
+    C = np.zeros(shape=(reflen,hyplen),dtype=np.float32)
+    I = np.zeros(shape=(reflen,hyplen),dtype=np.bool)
+
+    for k,re in enumerate(ref):
+        for l,he in enumerate(hyp):
+            (re_on, re_dur) = re['onset'],re['duration']
+            (he_on, he_dur) = he['onset'],he['duration']
+            o = max(0, min(re_on+re_dur, he_on+he_dur) - max(re_on,he_on))
+            C[k,l] =  2*o / (re_dur + he_dur)
+            I[k,l] = (events[re['label']] == events[he['label']])
+
+    # Identify contiguous regions, these are candidates for hits/confusions
+    # Find optimal pairs for each region
+    cnd = list()
+    (image, reg_num) = ndimage.label(C)
+    for lbl in np.arange(1, reg_num+1):
+        kl_lst = list(np.argwhere(image == lbl))
+
+        # Iterative find/remove items from kl_lst
+        if len(kl_lst) < 2:
+            optim = tuple(kl_lst[0])
+            cnd.append((optim,C[optim]))
         else:
-            argmax = pair['argmax']
-            if argmax == 'ref':
-                flag = 'I'
-            else:
-               flag = 'M'
-        pair['HMIS'] = flag
-        hmis[sym2int[flag]] += 1
+            while len(kl_lst) > 0:
+                (optim, val) = (-1,-1), 0.0
+                for pair in kl_lst:
+                    if C[tuple(pair)] > val:
+                        optim = tuple(pair)
+                        val = C[optim]
+                cnd.append((optim,val))
+                kl_lst = [i for i in kl_lst if not (i[0]==optim[0] or i[1]==optim[1])]
 
-    (H,M,I,S) = hmis
-    der = round( 100*(M+I+S)/(H/2+M+S),2)
-    return (ali,hmis,der)
+    # Compute error, generate ali
+    ali = list()
+    (h,c) = (0,0)
+    for (pair,val) in cnd:
+        if val > thr:
+            ali.append((pair,val))
+            if I[pair]:
+                h += 1
+            else:
+                c += 1               
+    m = reflen - h - c
+    fa = hyplen - h - c
+    score = np.array([h,m,fa,c],dtype=np.uint32)
+ 
+    return score

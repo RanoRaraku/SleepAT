@@ -1,6 +1,5 @@
 from .add_null_events import add_null_events
 from .create_utt2seg import create_utt2seg
-from .date_to_string import date_to_string
 from .events_to_bounds import events_to_bounds
 from .filter_scoring import filter_scoring
 from .get_nested_dict_items import get_nested_dict_items
@@ -8,7 +7,6 @@ from .int2sym import int2sym
 from .list_files import list_files
 from .list_hdf5 import list_hdf5
 from .merge_scp import merge_scp
-from .normalize_scoring import normalize_scoring
 from .scoring_to_targets import scoring_to_targets
 from .seg2utt_to_utt2seg import seg2utt_to_utt2seg
 from .segment_periods import segment_periods
@@ -19,8 +17,6 @@ from .setup_workdir import setup_workdir
 from .spk2utt_to_utt2spk import spk2utt_to_utt2spk
 from .split_data_per_utterance import split_data_per_utterance
 from .split_data_per_speaker import split_data_per_speaker
-from .string_to_date import string_to_date
-from .synchronize_scorings import synchronize_scorings
 from .targets_to_scoring import targets_to_scoring
 from .utt2spk_to_spk2utt import utt2spk_to_spk2utt
 from .validate_data import validate_data

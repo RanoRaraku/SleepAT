@@ -2,11 +2,9 @@
 Made by Michal Borsky, 2019, copyright (C) RU
 Transform an array of numerical targets to textual scoring.
 """
-import datetime
-from datetime import timedelta
 import numpy as np
 import sleepat
-from sleepat import dsp, opts, utils
+from sleepat import dsp, opts, utils, objects
 
 
 def targets_to_scoring(targets:np.ndarray, post:np.ndarray, events:dict, config:str=None,**kwargs) -> list:
@@ -55,7 +53,6 @@ def targets_to_scoring(targets:np.ndarray, post:np.ndarray, events:dict, config:
         label = events_inv[targets[beg]]
         onset = round(dsp.frame_to_time(beg, conf.wstep),6)
         dur = round(dsp.frame_to_time(end - beg, conf.wstep),6)
-        start = utils.date_to_string(utils.string_to_date(conf.tstamp)
-            + timedelta(seconds=onset))
-        scoring += [{'label':label, 'start':start, 'onset':onset, 'duration':dur}]
+        start = objects.TimeStamp(stamp=conf.stamp, offset=onset)
+        scoring += [{'label':label, 'start':start.print(), 'onset':onset, 'duration':dur}]
     return scoring

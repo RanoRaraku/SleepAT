@@ -4,7 +4,7 @@ from .make_targets import make_targets
 from .make_mfcc import make_mfcc
 from .make_acbf import make_acbf
 from .make_mvn_stats import make_mvn_stats
-from .score_detection import score_detection
+from .score_detect import score_detect
 from .segment_data import segment_data
 from .train_nnet import train_nnet
 from .train_dur import train_dur

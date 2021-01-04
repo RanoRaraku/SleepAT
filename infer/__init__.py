@@ -1,4 +1,5 @@
-from .align_classify import align_classify
-from .align_detect import align_detect
+from .accumulate_score import accumulate_score
 from .compute_der import compute_der
-from .compute_fer import compute_fer
+from .compute_ser import compute_ser
+from .compute_metrics import compute_metrics
+

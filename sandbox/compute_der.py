@@ -1,100 +1,117 @@
 """
 Made by Michal Borsky, 2019, copyright (C) RU
-Compute detection error from annotation, transcription, and alignment
+Compute detection error rate between reference and hypothesis.
 """
 import numpy as np
+import sleepat 
+from sleepat import io
 
-def compute_der(annot:dict, trans:dict, align:dict, events:dict, threshold:float=0.5) -> tuple:
+def compute_der(ref:list, hyp:list, events:dict, thr:float=1/2) -> dict:
     """
-    Compute localization and classification errors for a detector. Inputs are 'annot', 'trans',
-    and 'align' dicts which use the same utt_id keys. One can supply a threshold for positive
-    detection. 'Events' dict and 'exclude_event' can be supplied to exclude 'event' type from
-    error summary. Regarding classification, an event is correctly (C) detected if metric >=
-    'threshold' and the labels match. Misses consist of insertions (I), substitutions (S), and
-    deletions (D). The definitions are as:
-    C if (AoO >= thr.) && (ref == hyp)
-    S if (AoO >= thr.) && (ref != hyp)
-    I if (AoO < thr.) && (ref != hyp)
-    D if (AoO < thr.) && (ref == hyp)
-    These flags are added to 'align' and the updated dict is returned.
+    Compute dvent error rate (DER) at an event level. Inputs are 'ref', 'hyp', which are 
+    lists of dicts, and 'events' which is a dict. Each event in hyp/ref  has 'onset', duration',
+    and 'label' keys defined, i.e. {'label':snore, 'onset':0.0, 'duration': 1.0}. Events dict
+    maps between event labels (string) event symbols (int) i.e. {'snore':1}. All event types
+    in ref and hyp are included in evaluation, it might be prudent to remove some that are not
+    to be scored before. Ref/hyp/events can't be empty, but they can be of unequal length.
+    The implementation assumes events are chronologically ordered and don't overlap.    
+    
+    We align ref/hyp using relative length of overlap (LoO),
+    record (ref_i), (hyp_j) indexes, LoO value, and what event it was. The decision labels:
+    Hit        : LoO >= thr and labels match
+    Confusion  : LoO >= thr and labels match
+    Miss       : LoO < thr and argmax == hyp
+    False Alarm: LoO < thr and argmax == ref
 
-    The localization error assesses boundary placement, beginning and end, for correctly detected
-    events only. Values are mean absolute deltas in time units the events use. Formulas:
-    beg_prec = mean(|ref_beg - hyp_beg|)
-    end_prec = mean(|ref_end - hyp_end|)
-
-    The classification error is expressed as precision and recall for each class in events
-    separatelly.
+    The Event Error Rate is defined as :
+        EER = (Conf + Miss + FA) / (Hit + Conf Miss)
 
     Arguments:
-        annot ... a dict with utt_ids with annotated events
-        trans ... a dict with utt_ids with predicted events
-        align ... a dict with utt_ids with alingment betweet annot and trans
-        events ...  maps event text labels to numerical values
-        threshold ... alignment metric threshold for positive detection (def:float = 0.5)
+        ref ... a list of dicts indexed by utt_id with reference events
+        hyp ... a list of dicts indexed by utt_id with hypothesis events
+        events ...  maps event labels (str) to symbols (int)
+        thr ... threshold value for successfull detection (default:float = 2/3)
     Return:
-        tuple of (alig updated with decisions, results)
-
-    ToDo:
-        check for empty ref/hyp/ali
+        dict {'score':[H/M/FA/C], 'DER':DER}
     """
     # Checks
-    required = [annot, trans, align, events]
-    for item in required:
+    for item in [ref,hyp,events]:
         if not item:
-            print(f'Error: {item} is empty.')
+            print(f'Error compute_der(): {item} is empty.')
             exit(1)
-    if threshold < 0:
-        print(f'Error: set threshold is < 0 ({threshold}).')
+    for item in [ref,hyp]:
+        if not isinstance(item,list):
+            print(f'Error compute_der(): {item} is not a list.')
+            exit(1)
+    if not isinstance(events,dict):
+        print(f'Error compute_der(): events is not a dict.')
         exit(1)
+    if thr < 0:
+        print(f'Error compute_der(): thr is < 0 ({thr}).')
+        exit(1)
+    elif thr < 1/2:
+        print(f'Warning compute_der(): thr is < 1/2 ({thr}). This is not advised.')
+    thr = round(thr,4)
 
-    events_inv = dict()
-    for key,val in events.items():
-        if val in events_inv and key != 'null':
-            continue
-        events_inv[val] = key        
-    enum = len(events_inv.keys())
 
-    # Accumulate stats, use a value indexing instead of if/else
-    # ISDC indexing is: 0->I, 1->S, 2->D, 3->C, add text value to original align
-    isdc = [0,0,0,0]
-    (beg_mad,end_mad) = 0.0,0.0
-    val2txt = {0:'I',1:'S',2:'D',3:'C'}
-    conf_mat = np.zeros(shape=(enum,enum),dtype=np.uint32)
+    # Compute cost matrix, negative costs are set to 0, indicating no overlap
+    (reflen,hyplen) = len(ref),len(hyp)
+    C = np.zeros(shape=(reflen,hyplen),dtype=np.float32)
+    I = np.zeros(shape=(reflen,hyplen),dtype=np.bool)
 
-    for utt_id,ali in align.items():
-        (ref,hyp) = annot[utt_id], trans[utt_id]
-        for pair in ali:
-            score = pair['Score']
-            (ref_event, hyp_event) = ref[pair['Ref']],hyp[pair['Hyp']]
-            (oref, dref, lref) = ref_event['onset'], ref_event['duration'], ref_event['label']
-            (ohyp, dhyp, lhyp) = hyp_event['onset'], hyp_event['duration'], hyp_event['label']  
+    for i,ref_event in enumerate(ref):
+        for j,hyp_event in enumerate(hyp):
+            (ref_on,ref_dur,ref_lbl) = ref_event['onset'],ref_event['duration'],ref_event['label']
+            (hyp_on,hyp_dur,hyp_lbl) = hyp_event['onset'],hyp_event['duration'],hyp_event['label']
+            o = max(0, min(ref_on+ref_dur, hyp_on+hyp_dur) - max(ref_on,hyp_on))
+            C[i,j] = o / (ref_dur + hyp_dur - o)
+            I[i,j] = (events[ref_lbl] == events[hyp_lbl])
 
-            # Conf_mat population
-            (i,j) = events[lref], events[lhyp]
-            conf_mat[i,j] += 1
+    # Find the closest event for every ref/hyp and record it
+    # Version with full tracing and checks, but inefficient
+    # Sanity checks:
+        # 1) Argmax progressively drops search candidates, needs min(LoO) = 0
+        # 2) If only 0 exist (no overlap), no pairing i/j event is recorded (NaN)
+    # Warning: It relies on np.argmax() to return 1st arg. if multiple exist!
+    (k, l, ali) = (0, 0, list())
+    for i in range(reflen):
+        j = C[i,k:].argmax() + k
+        (k, val) = (j, round(C[i,j],8))
+        if val == 0:
+            j = float('nan')
+        ali.append({'argmax':'hyp', 'pair':(i,j), 'cost':val})
 
-            # ISCD flag
-            val = (score >= threshold) + 2*(lref == lhyp)
-            isdc[val] += 1
-            if val == 3:
-                beg_mad += abs(oref - ohyp)
-                end_mad += abs(oref + dref - ohyp - dhyp)
-            pair['ISDC'] = val2txt[val]
+    for j in range(hyplen):
+        i = C[l:,j].argmax() + l
+        (l, val) = (i, round(C[i,j],8))
+        if val == 0:
+            i = float('nan')
+        ali.append({'argmax':'ref','pair':(i,j), 'cost':val})
 
-    # Compute classify + boundary errors
-    if isdc[3] == 0:
-        (beg_mad,end_mad) = [float('nan'),float('nan')]
-    else:
-        beg_mad = round(beg_mad/isdc[3],6)
-        end_mad = round(end_mad/isdc[3],6)
+    # Score alignment
+    # Rely on exclusive behavior of C[i,j], if cost > 2/3 then it can only be hit
+    # There also is another item in ali with the same ref_idx, hyp_idx, cost
+    (h,m,fa,c) = (0,0,0,0)
+    for item in ali:
+        if item['cost'] > thr:
+            if I[item['pair']]:
+                item['H/M/FA/C'] = 'H'
+                h += 0.5
+            else:
+                item['H/M/FA/C'] = 'C'
+                c += 0.5
+        else:
+            argmax =item['argmax']
+            if argmax == 'ref':
+                item['H/M/FA/C'] = 'FA'
+                fa += 1
+            else:
+                item['H/M/FA/C'] = 'M'
+                m += 1
 
-    classify = dict()
-    for i in range(enum):
-        tp = conf_mat[i,i]
-        prec = tp / conf_mat[:,i].sum()
-        rec = tp / conf_mat[i,:].sum()
+    score = np.array([h,m,fa,c],dtype=np.int32)
+    der = round(100*(c+m+fa)/reflen,2)
 
-        classify[events_inv[i]] = {'prec':prec, 'rec':rec}
+    print(score,der)
 
-    return (align, {'ISDC':isdc,'Beg_MAD':beg_mad,'End_MAD':end_mad})
+    return ({'score':score, 'DER':der})

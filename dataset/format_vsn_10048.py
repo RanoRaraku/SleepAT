@@ -25,7 +25,7 @@ def format_vsn_10048(src_dir:str, dst_dir:str, wave_dir:str, config:str=None, **
     channel from and EDF container and saves them into npy arrays. The rest if mostly copy
     of steps.segment_data().
     Input:
-        src_dir ... directory with source files 
+        src_dir ... directory with source files
         dst_dir ... directory to put formatted data_folder
         wave_dir .... where to store waveform extracted from EDF
         <channel> ... channel to extract from EDF container (default:str = 'Audio')
@@ -36,7 +36,7 @@ def format_vsn_10048(src_dir:str, dst_dir:str, wave_dir:str, config:str=None, **
     """
     print(f'Formatting data folder {src_dir} into {dst_dir}.')
     conf = opts.FormatVSN_10048(config=config, **kwargs)
-    
+
     if not path.isdir(dst_dir):
         os.mkdir(dst_dir)
     if not path.isdir(wave_dir):

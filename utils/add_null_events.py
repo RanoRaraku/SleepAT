@@ -2,10 +2,8 @@
 Made by Michal Borsky, 2019, copyright (C) RU
 Adds null events to a scoring.
 """
-import datetime
-from datetime import timedelta
 import sleepat
-from sleepat import utils
+from sleepat import utils, objects
 
 
 def add_null_events(scoring:list, period:dict) -> list:
@@ -26,7 +24,7 @@ def add_null_events(scoring:list, period:dict) -> list:
     """
     beg = 0.0
     scoring_null = list()
-    scoring_dur = period['duration']  
+    scoring_dur = period['duration']
     scoring_start = period['start']
     if scoring_dur == 0:
         print(f'Error: scoring duration is 0.')
@@ -36,17 +34,15 @@ def add_null_events(scoring:list, period:dict) -> list:
         if event['onset'] > beg:
             onset = beg
             dur = round(event['onset']- onset,6)
-            start = utils.date_to_string(utils.string_to_date(scoring_start)
-                + timedelta(seconds=onset))
-            scoring_null += [{'label':'null','start':start,'onset':onset,'duration':dur}]
+            start = objects.TimeStamp(stamp=scoring_start, offset=onset)
+            scoring_null += [{'label':'null','start':start.print(),'onset':onset,'duration':dur}]
         scoring_null += [event]
         beg = round(event['onset'] + event['duration'],6)
 
     if beg < scoring_dur:
         onset = beg
         dur = round(scoring_dur - onset,6)
-        start = utils.date_to_string(utils.string_to_date(scoring_start)
-            + timedelta(seconds=onset))
-        scoring_null += [{'label':'null','start':start,'onset':onset, 'duration':dur}]
+        start = objects.TimeStamp(stamp=scoring_start, offset=onset)
+        scoring_null += [{'label':'null','start':start.print(),'onset':onset, 'duration':dur}]
 
     return scoring_null

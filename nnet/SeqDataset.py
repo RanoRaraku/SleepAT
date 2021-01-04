@@ -35,6 +35,7 @@ class SeqDataset(data.Dataset):
         DataLoader args can be specified as well but are loaded
         dynamically, check your Torch version for defaults.
 
+
         Arguments:
         data_dir ... directory with feats.scp,targets.scp,spk2utt,utt2spk
         <mode> ... usage mode ('train'|'eval'|'infer'), 'infer' mode
@@ -51,8 +52,8 @@ class SeqDataset(data.Dataset):
         <apply_mvn> ... whethet to apply mean and variance normalization (def: bool=False)
             <norm_vars> ... whether to normaliza variances (def: bool=False)
         <<DataLoader args>> ... see torch.utils.data.DataLoader for args.
-        config ... a configuration JSON file to specify all above
-        **kwargs ... setting all above through kwargs
+        config ... a config JSON file to set optional args <>/<<>>
+        **kwargs ... setting optional args <>/<<>> through kwargs
         """
         utils.validate_data(data_dir, no_feats=False)
         self.conf = opts.SeqDataset(config,**kwargs)
@@ -131,9 +132,9 @@ class SeqDataset(data.Dataset):
         n = n[0]
 
         if self.conf.add_delta:
-            n *= (1+self.conf.delta_order)
+            n *= (1 + self.conf.delta_order)
         if self.conf.splice_frames:
-            n *= (1+self.conf.splice_left+self.conf.splice_right)
+            n *= (1 + self.conf.splice_left + self.conf.splice_right)
         self.sample_dim = n
 
     def make_samples(self):

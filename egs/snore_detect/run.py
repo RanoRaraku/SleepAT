@@ -65,7 +65,7 @@ if __name__ == '__main__':
     if stage <= 3:
         data_train = path.join(data_dir,'train')
         data_dev = path.join(data_dir,'dev')
-        local.train_dnn(data_train, data_dev, f'{data_dir}/score', f'{work_dir}/exp/dnn512', 
+        local.train_dnn(data_train, data_dev, f'{data_dir}/score', f'{work_dir}/exp/dnn512',
             config_dataset=dataset_conf, config_mdl=dnn_conf, config_optim=train_conf)
 
     # Evaluation

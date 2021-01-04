@@ -40,7 +40,7 @@ class BaseOpts(object):
     def as_kwargs(self):
         return self.__dict__
 
-## Python Opts Class 
+## Python Opts Class
 ## To get args from a Python-native class/function
 #-----------------------------------------------------------------
 class PyClass(BaseOpts):
@@ -226,13 +226,13 @@ class ComputePca(BaseOpts):
         self.update(config,**kwargs)
 
 
-        self.update(config,**kwargs)  
+        self.update(config,**kwargs)
 
 class ApplyPca(BaseOpts):
     def __init__(self, config:str=None, **kwargs):
         self.__name__ = 'ApplyPcaOpts'
         self.pca_dim = 40
-        self.update(config,**kwargs)        
+        self.update(config,**kwargs)
 
 ## Utils Options
 #-----------------------------------------------------------------
@@ -246,7 +246,7 @@ class TargetsToAnnot(BaseOpts):
     def __init__(self, config:str=None, **kwargs):
         self.__name__ = 'TargetsToAnnotOpts'
         self.register_from_opts(TimeToFrame())
-        self.tstamp = '00/00/00T00:00:00.000000'
+        self.register_from_opts(TimeStamp())
         self.update(config,**kwargs)
 
 class SegmentData(BaseOpts):
@@ -265,9 +265,10 @@ class PrepVSN_10048(BaseOpts):
     """
     def __init__(self, config:str=None, **kwargs):
         self.__name__ = 'PrepVSN_10048'
-        self.scorings = ['ms_snore','ms_snore_v2']
+        self.scorings = ['ms_snore_v1_p1','ms_snore_v1_p2']
         self.bad_spk = ['']
         self.use_period = 'analysis'
+        self.utt2seg = {}
         self.update(config,**kwargs)
 
 class FormatVSN_10048(BaseOpts):
@@ -282,7 +283,7 @@ class FormatVSN_10048(BaseOpts):
         self.update(config,**kwargs)
 
 ## Nnet Options
-#-----------------------------------------------------------------     
+#-----------------------------------------------------------------
 class TrainTorch(BaseOpts):
     def __init__(self,config:str=None, **kwargs):
         self.__name__ = 'TrainTorchOpts'
@@ -329,7 +330,7 @@ class Dnn_2h(BaseOpts):
         self.out_dim = 2
         self.hid_dim = 512
         self.dropout_prob = 0.5
-        self.update(config,**kwargs)        
+        self.update(config,**kwargs)
 
 class SimpleDataset(BaseOpts):
     """
@@ -362,13 +363,13 @@ class ConvDataset(BaseOpts):
     CNN model. The DataLoader options are not here.
     """
     def __init__(self, config:str=None, **kwargs):
-        self.__name__ = 'ConvDatasetOpts'    
+        self.__name__ = 'ConvDatasetOpts'
         self.context_left = 4
         self.context_right = 4
         self.apply_mvn = True
         self.apply_mvs = False
         self.add_delta = True
-        self.mode = 'infer'        
+        self.mode = 'infer'
         self.update(config,**kwargs)
 
         if self.apply_mvn or self.apply_mvs:
@@ -403,7 +404,7 @@ class SeqDataset(BaseOpts):
         if self.add_delta:
             self.register_from_opts(AddDelta())
         if self.apply_pca:
-            self.register_from_opts(ApplyPca())            
+            self.register_from_opts(ApplyPca())
         self.update(config,**kwargs)
 
 ## Steps Options
@@ -412,6 +413,16 @@ class TrainNnet(BaseOpts):
     def __init__(self,config_mdl:str=None, config_ds:str=None, **kwargs):
         self.__name__='NnetOpts'
         self.model = 'Dnn_4h1bn'
-        self.dataset = 'SimpleDataset'   
+        self.dataset = 'SimpleDataset'
         self.update(config_mdl,**kwargs)
-        self.update(config_ds,**kwargs)   
+        self.update(config_ds,**kwargs)
+
+## Objects Options
+#--------------------------------------------------------------
+class TimeStamp(BaseOpts):
+    def __init__(self,config:str=None, **kwargs):
+        self.__name__='TimeStamp'
+        self.format = '%Y/%m/%dT%H:%M:%S.%f'
+        self.stamp = '0000/01/01T00:00:000000'
+        self.offset = 0.0
+        self.update(config,**kwargs)

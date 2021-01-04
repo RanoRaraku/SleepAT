@@ -45,7 +45,7 @@ def prep_vsn_10048(data_dir:str, dst_dir:str, config:str=None, **kwargs) -> None
         # Wave.scp file (we extract wave later)
         # Utt_id is a also spk_id
         wave[utt_id] = {'file':path.join(data_dir,file)}
-        utt2spk[utt_id] = utt_id 
+        utt2spk[utt_id] = utt_id
 
         # Annotation file from scoring.json
         events = list()

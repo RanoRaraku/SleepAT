@@ -23,12 +23,13 @@ def prepare_vsn_10048(data_dir:str, dst_dir:str, config:str=None, **kwargs) -> N
         dst_dir ... working directory of the project
         <scorings> ... scorings to extract (default:list=['ms_snore','ms_snore_v2'])
         <bad_spk> ... speakers to avoid processing (default:list=[''])
-        <use_period> ... period to use for segmentation ('analysis'|'recording'),
+        <use_period> ... period to use for segmentation ('analysis'|'recording'|'manual'),
             (default:str='analysis')
+        <utt2seg> ... segmentation dict if used_period = 'manual'
         config ... config file to set optional args <>, (default:str=None)
         **kwargs ... to set optional args (<>)
     """
-    print(f'Preparing dataset {data_dir}.')
+    print(f'Preparing dataset {data_dir} into {dst_dir}.')
     conf = opts.PrepVSN_10048(config=config, **kwargs)
 
     if not path.isdir(data_dir):
@@ -42,6 +43,7 @@ def prepare_vsn_10048(data_dir:str, dst_dir:str, config:str=None, **kwargs) -> N
     annot,utt2seg = dict(), dict()
     for file in utils.list_files(data_dir,'.hdf5'):
         utt_id = file.split('.')[0]
+        skip_utt2seg = False
         if utt_id in conf.bad_spk:
             continue
 
@@ -64,27 +66,33 @@ def prepare_vsn_10048(data_dir:str, dst_dir:str, config:str=None, **kwargs) -> N
         annot[utt_id] = events
 
         # Periods + utt2seg
-        periods_lst = list()
-        if conf.use_period == 'period':
-            periods_lst.append(data['Recording'])
-        if conf.use_period == 'analysis':
+        period_lst = list()
+        if conf.use_period == 'recording':
+            period_lst.append(data['Recording'])
+        elif conf.use_period == 'analysis':
             for scoring in scorings_present:
                 period = utils.filter_scoring(data[scoring],'label','period_analysis')
                 if not period:
-                    print(f'Error: no analysis period for {utt_id} and {scoring}')
+                    print(f'Error: no analysis period for {utt_id} and {scoring}.')
                     exit(1)
-                periods_lst += period
+                period_lst += period   # utils.filter_scoring() returns list so + not append
+        elif conf.use_period == 'manual':
+            utt2seg[utt_id] = conf.utt2seg[utt_id]
+            periods.update(utt2seg[utt_id])
+            skip_utt2seg = True                
+        else:
+            print(f'Error: no valid use_period defined for {utt_id}.')
+            exit(1)
 
-        utt2seg_acc = dict()
-        for i,period in enumerate(periods_lst):
-            seg_id = f'{utt_id}-{str(i)}'
-            if period['onset'] < 0:
-                print(f'Warning: {conf.use_period} period onset < 0 ({period["onset"]}).')
-            periods[seg_id] = period
-            utt2seg_acc[seg_id] = period
-        utt2seg[utt_id] = utt2seg_acc
+        if not skip_utt2seg:
+            utt2seg_acc = dict()
+            for i,period in enumerate(period_lst):
+                seg_id = f'{utt_id}-{str(i)}'
+                periods[seg_id] = period
+                utt2seg_acc[seg_id] = period
+            utt2seg[utt_id] = utt2seg_acc
 
-    # Dump  disk
+    # Dump to disk
     io.write_scp(path.join(dst_dir,'wave.scp'),wave)
     io.write_scp(path.join(dst_dir,'utt2spk'),utt2spk)
     io.write_scp(path.join(dst_dir,'spk2utt'),utt2spk)
