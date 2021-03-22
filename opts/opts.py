@@ -423,6 +423,6 @@ class TimeStamp(BaseOpts):
     def __init__(self,config:str=None, **kwargs):
         self.__name__='TimeStamp'
         self.format = '%Y/%m/%dT%H:%M:%S.%f'
-        self.stamp = '0000/01/01T00:00:000000'
+        self.stamp = '0001/01/01T00:00:00.000000'
         self.offset = 0.0
         self.update(config,**kwargs)

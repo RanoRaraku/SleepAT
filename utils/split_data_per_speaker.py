@@ -84,3 +84,4 @@ def split_data_per_speaker(data_dir:str, dst_dir:str=None,
             if file == 'utt2spk':
                 spk2utt = utils.utt2spk_to_spk2utt(subset_scp)
                 io.write_scp(path.join(dst_dir,subset,'spk2utt'),spk2utt)
+    print('Done.\n')

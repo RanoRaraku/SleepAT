@@ -1,41 +1,40 @@
 """
-Made by Michal Borsky, 2019, copyright (C) RU
-Compute detection error rate between reference and hypothesis.
+Made by Michal Borsky, 2020, copyright (C) RU
+Compute identification/detection error rate.
 """
 import numpy as np
-import sleepat 
-from sleepat import io
+import scipy
+from scipy import ndimage
 
-def compute_der(ref:list, hyp:list, events:dict, thr:float=1/2) -> dict:
+def compute_der(ref:list, hyp:list, events:dict, thr:float = 2/3) -> np.ndarray:
     """
-    Compute dvent error rate (DER) at an event level. Inputs are 'ref', 'hyp', which are 
-    lists of dicts, and 'events' which is a dict. Each event in hyp/ref  has 'onset', duration',
-    and 'label' keys defined, i.e. {'label':snore, 'onset':0.0, 'duration': 1.0}. Events dict
-    maps between event labels (string) event symbols (int) i.e. {'snore':1}. All event types
-    in ref and hyp are included in evaluation, it might be prudent to remove some that are not
-    to be scored before. Ref/hyp/events can't be empty, but they can be of unequal length.
-    The implementation assumes events are chronologically ordered and don't overlap.    
+    Compute detection error at a discrete level. Inputs are 'ref', 'hyp', which are
+    lists, and 'events' which is a dict. Each event in hyp/ref  has 'onset', duration',
+    and 'label' keys defined, i.e. {'label':snore, 'onset':0.0, 'duration': 1.0}. 'Events'
+    maps between event labels (string) and event symbols (int) i.e. {'snore':1}. Used in case 
+    multiple labels (central/obstructive apnea) map to the same symbol. Threshold
+    can be used to set a minimal value for a successful detection, thr = 0 means any 
+    non-zero overlap is a hit. All events in ref and hyp are included in evaluation,
+    remove events that are not to be scored beforehand. Ref/events can't be empty. 
+    The implementation assumes events are chronologically ordered and don't overlap.
+
+    Calculate relative overlap (C) between ref-hyp, find an optimal alignment, and assign decision
+    labels defined as:
+    Hit        : C > trh && event labels match
+    Confusion  : C > trh && event labels don't match
+    Miss       : C <= trh && event is from ref
+    False Alarm: C <= trh && event is from hyp
     
-    We align ref/hyp using relative length of overlap (LoO),
-    record (ref_i), (hyp_j) indexes, LoO value, and what event it was. The decision labels:
-    Hit        : LoO >= thr and labels match
-    Confusion  : LoO >= thr and labels match
-    Miss       : LoO < thr and argmax == hyp
-    False Alarm: LoO < thr and argmax == ref
-
-    The Event Error Rate is defined as :
-        EER = (Conf + Miss + FA) / (Hit + Conf Miss)
-
     Arguments:
-        ref ... a list of dicts indexed by utt_id with reference events
-        hyp ... a list of dicts indexed by utt_id with hypothesis events
+        ref ... a list of reference events, each event is a dictionary
+        hyp ... a list of hypothesis events, each event is a dictionary
         events ...  maps event labels (str) to symbols (int)
-        thr ... threshold value for successfull detection (default:float = 2/3)
+        thr ... threshold for successful detection (def:float = 2/3)
     Return:
-        dict {'score':[H/M/FA/C], 'DER':DER}
+        score as numpy array (h/m/fa/c)
     """
     # Checks
-    for item in [ref,hyp,events]:
+    for item in [ref,events]:
         if not item:
             print(f'Error compute_der(): {item} is empty.')
             exit(1)
@@ -47,71 +46,59 @@ def compute_der(ref:list, hyp:list, events:dict, thr:float=1/2) -> dict:
         print(f'Error compute_der(): events is not a dict.')
         exit(1)
     if thr < 0:
-        print(f'Error compute_der(): thr is < 0 ({thr}).')
+        print(f'Error compute_der(): thr < 0.')
         exit(1)
-    elif thr < 1/2:
-        print(f'Warning compute_der(): thr is < 1/2 ({thr}). This is not advised.')
-    thr = round(thr,4)
+    if not hyp:
+        return np.array([0,len(ref),0,0],dtype=np.uint32)
 
 
-    # Compute cost matrix, negative costs are set to 0, indicating no overlap
+
+    # Compute cost/identity matrix, negative costs (no-overlap) are set to 0
     (reflen,hyplen) = len(ref),len(hyp)
     C = np.zeros(shape=(reflen,hyplen),dtype=np.float32)
     I = np.zeros(shape=(reflen,hyplen),dtype=np.bool)
 
-    for i,ref_event in enumerate(ref):
-        for j,hyp_event in enumerate(hyp):
-            (ref_on,ref_dur,ref_lbl) = ref_event['onset'],ref_event['duration'],ref_event['label']
-            (hyp_on,hyp_dur,hyp_lbl) = hyp_event['onset'],hyp_event['duration'],hyp_event['label']
-            o = max(0, min(ref_on+ref_dur, hyp_on+hyp_dur) - max(ref_on,hyp_on))
-            C[i,j] = o / (ref_dur + hyp_dur - o)
-            I[i,j] = (events[ref_lbl] == events[hyp_lbl])
+    for k,re in enumerate(ref):
+        for l,he in enumerate(hyp):
+            (re_on, re_dur) = re['onset'],re['duration']
+            (he_on, he_dur) = he['onset'],he['duration']
+            o = max(0, min(re_on+re_dur, he_on+he_dur) - max(re_on,he_on))
+            C[k,l] =  2*o / (re_dur + he_dur)
+            I[k,l] = (events[re['label']] == events[he['label']])
 
-    # Find the closest event for every ref/hyp and record it
-    # Version with full tracing and checks, but inefficient
-    # Sanity checks:
-        # 1) Argmax progressively drops search candidates, needs min(LoO) = 0
-        # 2) If only 0 exist (no overlap), no pairing i/j event is recorded (NaN)
-    # Warning: It relies on np.argmax() to return 1st arg. if multiple exist!
-    (k, l, ali) = (0, 0, list())
-    for i in range(reflen):
-        j = C[i,k:].argmax() + k
-        (k, val) = (j, round(C[i,j],8))
-        if val == 0:
-            j = float('nan')
-        ali.append({'argmax':'hyp', 'pair':(i,j), 'cost':val})
+    # Identify contiguous regions, these are candidates for hits/confusions
+    # Find optimal pairs for each region
+    cnd = list()
+    (image, reg_num) = ndimage.label(C)
+    for lbl in np.arange(1, reg_num+1):
+        kl_lst = list(np.argwhere(image == lbl))
 
-    for j in range(hyplen):
-        i = C[l:,j].argmax() + l
-        (l, val) = (i, round(C[i,j],8))
-        if val == 0:
-            i = float('nan')
-        ali.append({'argmax':'ref','pair':(i,j), 'cost':val})
-
-    # Score alignment
-    # Rely on exclusive behavior of C[i,j], if cost > 2/3 then it can only be hit
-    # There also is another item in ali with the same ref_idx, hyp_idx, cost
-    (h,m,fa,c) = (0,0,0,0)
-    for item in ali:
-        if item['cost'] > thr:
-            if I[item['pair']]:
-                item['H/M/FA/C'] = 'H'
-                h += 0.5
-            else:
-                item['H/M/FA/C'] = 'C'
-                c += 0.5
+        # Iterative find/remove items from kl_lst
+        if len(kl_lst) < 2:
+            optim = tuple(kl_lst[0])
+            cnd.append((optim,C[optim]))
         else:
-            argmax =item['argmax']
-            if argmax == 'ref':
-                item['H/M/FA/C'] = 'FA'
-                fa += 1
+            while len(kl_lst) > 0:
+                (optim, val) = (-1,-1), 0.0
+                for pair in kl_lst:
+                    if C[tuple(pair)] > val:
+                        optim = tuple(pair)
+                        val = C[optim]
+                cnd.append((optim,val))
+                kl_lst = [i for i in kl_lst if not (i[0]==optim[0] or i[1]==optim[1])]
+
+    # Assign labels, generate alingment
+    ali = list()
+    (h,c) = (0,0)
+    for (pair,val) in cnd:
+        if val > thr:
+            ali.append((pair,val))
+            if I[pair]:
+                h += 1
             else:
-                item['H/M/FA/C'] = 'M'
-                m += 1
-
-    score = np.array([h,m,fa,c],dtype=np.int32)
-    der = round(100*(c+m+fa)/reflen,2)
-
-    print(score,der)
-
-    return ({'score':score, 'DER':der})
+                c += 1               
+    m = reflen - h - c
+    fa = hyplen - h - c
+    score = np.array([h,m,fa,c],dtype=np.uint32)
+ 
+    return score

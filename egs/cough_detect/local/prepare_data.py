@@ -5,7 +5,6 @@ import os
 from os import path
 import sleepat
 from sleepat import io, utils
-from matplotlib import pyplot as plt
 
 def prepare_data(src_dir:str, dst_dir:str, wave_dir:str) -> None:
     """

@@ -44,3 +44,4 @@ def make_targets(data_dir:str, lang_dir:str, targets_dir:str, config:str=None, *
         io.write_npy(tgt_fid, tgt)
         targets[utt_id] = tgt_fid
     io.write_scp(path.join(data_dir,'targets.scp'), targets)
+    print(f'Done.\n')

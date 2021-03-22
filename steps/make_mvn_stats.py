@@ -31,3 +31,4 @@ def make_mvn_stats(data_dir:str, dst_dir:str) -> None:
         io.write_npy(file,stats)
         mvn_dict[spk] = file
     io.write_scp(path.join(data_dir,'mvn.scp'), mvn_dict)
+    print(f'Done.\n')

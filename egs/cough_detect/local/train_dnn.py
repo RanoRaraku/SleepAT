@@ -19,7 +19,7 @@ def train_dnn(train_data:str, dev_data:str, lang_dir:str, exp_dir:str,
     Arguments:
         train_data .... directory with training data
         dev_data ... directory for development data
-        score_dir ... directory that contains classes file
+        score_dir ... directory that contains events file
         exp_dir ... output directory of training
         <config_dataset> .... configuration file for SimpleDataset()
         <config_mdl> ... configuration file for DnnSnore()
@@ -32,20 +32,17 @@ def train_dnn(train_data:str, dev_data:str, lang_dir:str, exp_dir:str,
         for file in utils.list_files(exp_dir):
             os.remove(path.join(exp_dir,file))
 
-    classes = io.read_scp(path.join(lang_dir,'classes'))
-    classes_num = len(set(list(classes.values())))
-    if classes_num < 1:
-        print(f'Error: number of classes < 2.')
+    events = io.read_scp(path.join(lang_dir,'events'))
+    events_num = len(set(list(events.values())))
+    if events_num < 1:
+        print(f'Error: number of events < 2.')
         exit(1)
 
     trainload = nnet.SimpleDataset(train_data,config=config_dataset,mode='train').to_dataloader()
     devload = nnet.SimpleDataset(dev_data,config=config_dataset,mode='train').to_dataloader()
     sample_dim = trainload.dataset.sample_dim
-    if len(sample_dim) > 1:
-        print(f'Error: sample dimension > 1. DNN expects a flat input.')
-        exit(1)
-    sample_dim = sample_dim[0]
 
     # Train the model
-    mdl = nnet.DnnCough(config=config_mdl, in_dim=sample_dim, out_dim=classes_num)
-    nnet.train_mdl(mdl, trainload, devload, exp_dir, config=config_optim)
+    mdl = nnet.Dnn_2h(config=config_mdl, in_dim=sample_dim, out_dim=events_num)
+    nnet.train_torch(mdl, trainload, devload, exp_dir, config=config_optim)
+    print('Done.\n')

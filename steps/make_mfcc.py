@@ -36,7 +36,7 @@ def make_mfcc(data_dir:str, feat_dir:str, config:str=None, **kwargs) -> None:
 
     # Main part
     if path.isfile(utt2seg_scp):
-        print(f'{" ":3}Utt2seg file found, assuming waveforms are indexed by seg_id.')
+        print(f'Utt2seg file found, assuming waveforms are indexed by seg_id.')
         utt2seg = io.read_scp(utt2seg_scp)
         for utt_id, item in wave_scp.items():
             wave = io.read_npy(item['file'])
@@ -46,7 +46,7 @@ def make_mfcc(data_dir:str, feat_dir:str, config:str=None, **kwargs) -> None:
                 io.write_npy(file, mfcc)
                 feats_dict[seg_id] = file
     else:
-        print(f'{" ":3}No utt2seg file found, assuming waveforms are indexed by utt_id.')
+        print(f'No utt2seg file found, assuming waveforms are indexed by utt_id.')
         for utt_id, item in wave_scp.items():
             wave = io.read_npy(item['file'])
             file = path.join(feat_dir, f'{utt_id}.mfcc.npy')
@@ -54,4 +54,5 @@ def make_mfcc(data_dir:str, feat_dir:str, config:str=None, **kwargs) -> None:
             io.write_npy(file, mfcc)
             feats_dict[utt_id] = file
     io.write_scp(path.join(data_dir,'mfcc.scp'), feats_dict)
-    print(f'{" ":3}Finished computing MFCC.') 
+    
+    print(f'MFCC extraction done.') 

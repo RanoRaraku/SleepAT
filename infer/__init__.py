@@ -1,5 +1,5 @@
 from .accumulate_score import accumulate_score
-from .compute_der import compute_der
-from .compute_ser import compute_ser
+from .eval_der import eval_der
+from .eval_ser import eval_ser
 from .compute_metrics import compute_metrics
 

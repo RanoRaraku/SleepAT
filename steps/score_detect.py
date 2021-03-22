@@ -13,6 +13,8 @@ def score_detect(data_dir:str, lang_dir:str, decode_dir:str) -> None:
     Evaluate detection performance which is understood as classification and localization
     problem.
     """
+    print(f'Scoring {decode_dir}.')
+
     # Checks and file loading
     for item in [data_dir,lang_dir,decode_dir]:
         if not path.isdir(item):
@@ -22,12 +24,12 @@ def score_detect(data_dir:str, lang_dir:str, decode_dir:str) -> None:
     # Dump to text files
     res_dir = path.join(decode_dir,f'scoring')
     if not path.isdir(res_dir):
-        os.mkdir(res_dir)    
+        os.mkdir(res_dir)
 
     sub2utt = io.read_scp(path.join(data_dir,'spk2utt'))
     utt2sub = io.read_scp(path.join(data_dir,'utt2spk'))
     refer = io.read_scp(path.join(data_dir,'annot'))
-    hypth = io.read_scp(path.join(decode_dir,'annot'))
+    hypth = io.read_scp(path.join(decode_dir,'trans'))
     events = io.read_scp(path.join(lang_dir,'events'))
 
     # Remove null events
@@ -41,40 +43,40 @@ def score_detect(data_dir:str, lang_dir:str, decode_dir:str) -> None:
         # IE is DE with thr = 0, (default thr = 2/3)
         if error == 'ier':
             kwargs = {'thr':0}
-            func = getattr(infer,'compute_der')
+            func = getattr(infer,'eval_der')
         else:
             kwargs = {}
-            func = getattr(infer,f'compute_{error}')
+            func = getattr(infer,f'eval_{error}')
 
-        # get basic per_utt stats, accumulate per_sub and total stats
+        # get per utterance/subject/total stats
         per_utt = dict()
         for utt in utt2sub:
             per_utt[utt] = func(refer[utt],hypth[utt],events, **kwargs)
         per_sub = infer.accumulate_score(per_utt, mode='per_sub', sub2utt=sub2utt)
         total = infer.accumulate_score(per_utt, mode='total')
 
+        # Write results to a file
+        with open(path.join(res_dir, error),'w') as fid:
 
-        # per_utt file
-        file = f'{error}_per_utt'
-        with open(path.join(res_dir,file),'w') as fid:
+            # Per utterance
+            print(f'Per Utterance',file=fid)
             for utt, score in per_utt.items():
                 res = infer.compute_metrics(score)
                 print(f'{utt} - error [%] {res["err"]} - f1 {res["f1"]} - [H/M/FA/C] : {res["score"]}', file=fid)
+            print(f'\n',file=fid)
 
-
-        # per_sub file
-        file = f'{error}_per_sub'
-        with open(path.join(res_dir,file),'w') as fid:
-            for utt, score in per_sub.items():
+            # Per subject
+            print(f'Per Subject',file=fid)            
+            for subj, score in per_sub.items():
                 res = infer.compute_metrics(score)
-                print(f'{utt} - error [%] {res["err"]} - f1 {res["f1"]} - [H/M/FA/C] : {res["score"]}', file=fid)
+                print(f'{subj} - error [%] {res["err"]} - f1 {res["f1"]} - [H/M/FA/C] : {res["score"]}', file=fid)
+            print(f'\n',file=fid)            
 
-        # total file
-        file = f'{error}_total'
-        with open(path.join(res_dir,file),'w') as fid:
-            for spk, score in total.items():
+            # total
+            print(f'Total',file=fid)            
+            for _, score in total.items():
                 res = infer.compute_metrics(score)
-                print(f'{spk} - error [%] {res["err"]} - f1 {res["f1"]} - [H/M/FA/C] : {res["score"]}', file=fid)
+                print(f'total - error [%] {res["err"]} - f1 {res["f1"]} - [H/M/FA/C] : {res["score"]}', file=fid)
 
-
-    print(f'Succesfully scored {decode_dir}.')
+    io.write_scp(path.join(decode_dir,'annot'),refer)
+    print(f'Scoring done.')
