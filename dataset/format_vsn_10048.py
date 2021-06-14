@@ -57,15 +57,15 @@ def format_vsn_10048(src_dir:str, dst_dir:str, wave_dir:str, config:str=None, **
     utt2spk_new = dict()
     for utt_id in utt2spk:
         (wave,fs) = io.read_edf_channel(waves[utt_id]['file'],conf.channel)
-        events = utils.filter_events(annot[utt_id], 'label', conf.valid_events)
+        events = utils.filter_scoring(annot[utt_id], 'label', conf.valid_events)
 
-        for segm_id,segm_wave in utils.segment_wave(wave,fs,utt2seg[utt_id]):
+        for (segm_id, segm_wave) in utils.segment_wave(wave,fs,utt2seg[utt_id]):
             file = path.join(wave_dir, segm_id + '.npy')
             waves_new[segm_id] = {'file':file,'fs':fs}
             utt2spk_new[segm_id] = utt_id
             io.write_npy(file, segm_wave)
 
-        for segm_id,segm_events in utils.segment_events(events,utt2seg[utt_id]):
+        for (segm_id,segm_events) in utils.segment_scoring(events,utt2seg[utt_id]):
             annot_new[segm_id] = segm_events
 
     # Dump on disk

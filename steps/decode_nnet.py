@@ -15,12 +15,13 @@ def decode_nnet(data_dir:str, lang_dir:str, exp_dir:str, config_mdl:str=None, co
     Decode with a DNN model saved in exp_dir. The dataset is a SimpleDataset object.
     See SimpleDataset() for content of  config_dataset. See DnnSnore for content of
     config_mdl. See train_mdl() for content of config_optim and  No kwargs transfer
-    from header to any config_* to avoid confusion.
+    allowed from func. header to any config_* to avoid confusion.
 
     Arguments:
         data_dir .... directory with training data
         lang_dir ... directory that contains events.txt file
         exp_dir ... output directory of trainings
+
         <config_dataset> .... configuration file for SimpleDataset()
         <config_mdl> ... configuration file for DnnSnore()
         <config_feats> ... configuration file for targets_to_annot()
@@ -28,28 +29,26 @@ def decode_nnet(data_dir:str, lang_dir:str, exp_dir:str, config_mdl:str=None, co
     # Loads and Checks
     print(f'Decoding {data_dir} into {exp_dir}.')
 
-    conf = opts.TrainNnet(config_mdl,config_ds)
+    decode_dir = path.join(exp_dir,f'decode_{path.basename(data_dir)}')
+    device_fid = path.join(exp_dir,'device')
+    events = io.read_scp(path.join(lang_dir,'events'))
+
     for item in [data_dir,lang_dir]:
         if not path.isdir(item):
             print(f'Error: {item} does not exist.')
             exit(1)
-
-    decode_dir = path.join(exp_dir,f'decode_{path.basename(data_dir)}')
     if not path.isdir(decode_dir):
         os.mkdir(decode_dir)
-
-    device_fid = path.join(exp_dir,'device')
     if not path.exists(device_fid):
         print(f'Error: {device_fid} does not exist.')
         exit(1)
-    device = io.read_scp(device_fid)['device']
-
-    events = io.read_scp(path.join(lang_dir,'events'))
     if not events:
         print(f'Error: events is empty.')
         exit(1)
-    events_num = len(set(events.values()))
 
+    conf = opts.TrainNnet(config_mdl, config_ds)
+    device = io.read_scp(device_fid)['device']        
+    events_num = len(set(events.values()))
 
     # Create dataset object
     dataset = getattr(nnet,conf.dataset)

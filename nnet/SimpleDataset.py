@@ -248,7 +248,7 @@ class SimpleDataset(data.Dataset):
         """
         data = getattr(self, name)
         for utt_id, item in self.meta.items():
-            if hasattr(self,'periods'):
+            if hasattr(self, 'periods'):
                 tstamp = self.periods[utt_id]['start']
             else:
                 tstamp = '00/00/00T00:00:00.000000'

@@ -58,7 +58,7 @@ def prep_vsn_10048(data_dir:str, dst_dir:str, config:str=None, **kwargs) -> None
             events += data[scoring]
 
             if conf.use_period == 'analysis':
-                periods = utils.filter_events(data[scoring],'label','period_analysis')
+                periods = utils.filter_scoring(data[scoring],'label','period_analysis')
                 if not periods:
                     msg = (f'{" ":3}Error: No analysis period for scoring "{scoring}"'
                         f' and subject {utt_id}.')

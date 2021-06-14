@@ -14,6 +14,8 @@ def make_bfcc(data_dir:str, feat_dir:str, config:str=None, **kwargs) -> None:
     Input:
         data_dir .... input data directory
         feat_dir .... output directory for bfcc files
+        config .... config file to pass optional args. <> (default:str=None)
+
         <fs> .... sampling frequency in Hz (default: float = 8000)
         <wlen> ... window length in seconds (default: float = 0.25)
         <wstep> ... window step in seconds (default: float = 0.01)
@@ -21,12 +23,11 @@ def make_bfcc(data_dir:str, feat_dir:str, config:str=None, **kwargs) -> None:
         <fmin> ... minimal frequency (default: float = 0)
         <fmax> ... maximum frequency (default: float = fs/2)
         <nceps> ... num. of cepstral coefficients including 0th (default:int = 13)
-        config .... config file to pass optional args. <> (default:str=None)
         **kwargs ... optional args. <>
     """
     print(f'Computing BFCC features for {data_dir}.')
-    utils.validate_data(data_dir,no_feats=True)
 
+    utils.validate_data(data_dir,no_feats=True)
     if not path.isdir(feat_dir):
         os.mkdir(feat_dir)
     wave_scp = io.read_scp(path.join(data_dir,'wave.scp'))
@@ -53,4 +54,5 @@ def make_bfcc(data_dir:str, feat_dir:str, config:str=None, **kwargs) -> None:
             io.write_npy(file, bfcc)
             feats_dict[utt_id] = file
     io.write_scp(path.join(data_dir,'bfcc.scp'), feats_dict)
+
     print(f'Finished computing BFCC.')

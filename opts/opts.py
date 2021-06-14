@@ -2,8 +2,11 @@
     Made by Michal Borsky, 2019, copyright (C) RU
     Library with default values for all functions.
 """
+import numpy as np
 from inspect import getargspec
-import sleepat.io as io
+import sleepat
+from sleepat import io
+
 
 ## Base Options Class
 ## All other classes adopt functionality but define their own attributes
@@ -54,46 +57,56 @@ class PyClass(BaseOpts):
 #-----------------------------------------------------------------
 class TimeToFrame(BaseOpts):
     def __init__(self):
+        self.__name__ = 'TimeToFrameOpts'
         self.wstep = 0.01
         self.wlen = 0.025
         self.fs = 8000.0
 
 class Segment(BaseOpts):
     def __init__(self):
+        self.__name__ = 'SegmentOpts'        
         self.register_from_opts(TimeToFrame())
         self.remove_dc = True
         self.wtype = 'hamming'
 
 class Spect(BaseOpts):
     def __init__(self):
+        self.__name__ = 'SpectOpts'        
         self.register_from_opts(Segment())
 
 class PowSpect(BaseOpts):
     def __init__(self):
+        self.__name__ = 'PowSpectOpts'        
         self.register_from_opts(Segment())
 
 class Preemph(BaseOpts):
     def __init__(self):
+        self.__name__ = 'PremphOpts'        
         self.preemphasis_alpha=0.97
 
 class Mel(BaseOpts):
     def __init__(self):
+        self.__name__ = 'MelOpts'        
         self.f = 0.0
 
 class InvMel(BaseOpts):
     def __init__(self):
+        self.__name__ = 'InvMelOpts'        
         self.melf = 0.0
 
 class Bark(BaseOpts):
     def __init__(self):
+        self.__name__ = 'BarkOpts'        
         self.f = 0.0
 
 class InvBark(BaseOpts):
     def __init__(self):
+        self.__name__ = 'InvbarkOpts'        
         self.barkf = 0.0
 
 class Melfb(BaseOpts):
     def __init__(self):
+        self.__name__ = 'MelbfOpts'        
         self.fs = 8000.0
         self.mel_filts = 22
         self.fmin = 0.0
@@ -102,6 +115,7 @@ class Melfb(BaseOpts):
 
 class Barkfb(BaseOpts):
     def __init__(self):
+        self.__name__ = 'BarkfbOpts'        
         self.fs = 8000.0
         self.fmin = 0.0
         self.fmax = self.fs/2
@@ -109,6 +123,7 @@ class Barkfb(BaseOpts):
 
 class Delta(BaseOpts):
     def __init__(self):
+        self.__name__ = 'DeltaOpts'        
         self.delta_window = 2
 
 
@@ -225,9 +240,6 @@ class ComputePca(BaseOpts):
             self.register_from_opts(AddDelta())
         self.update(config,**kwargs)
 
-
-        self.update(config,**kwargs)
-
 class ApplyPca(BaseOpts):
     def __init__(self, config:str=None, **kwargs):
         self.__name__ = 'ApplyPcaOpts'
@@ -260,8 +272,7 @@ class SegmentData(BaseOpts):
 #-----------------------------------------------------------------
 class PrepVSN_10048(BaseOpts):
     """
-    Default options for prep_vsn10_048 method
-    used to process VSN-10-048 dataset.
+    Default options for prep_vsn10_048 method used to process VSN-10-048 dataset.
     """
     def __init__(self, config:str=None, **kwargs):
         self.__name__ = 'PrepVSN_10048'
@@ -273,8 +284,7 @@ class PrepVSN_10048(BaseOpts):
 
 class FormatVSN_10048(BaseOpts):
     """
-    Default options for format_vsn10_048 method
-    used to process VSN-10-048 dataset.
+    Default options for format_vsn10_048 method used to process VSN-10-048 dataset.
     """
     def __init__(self, config:str=None, **kwargs):
         self.__name__ = 'FormatVSN_10048'
@@ -338,7 +348,7 @@ class SimpleDataset(BaseOpts):
     DNN model. The DataLoader options are not here.
     """
     def __init__(self, config:str=None, **kwargs):
-        self.__name__ = 'SimpleDatasetOpts'
+        self.__name__ = 'SimpleDataset'
         self.splice_frames = True
         self.apply_ma = False
         self.apply_mvn = True
@@ -363,7 +373,7 @@ class ConvDataset(BaseOpts):
     CNN model. The DataLoader options are not here.
     """
     def __init__(self, config:str=None, **kwargs):
-        self.__name__ = 'ConvDatasetOpts'
+        self.__name__ = 'ConvDataset'
         self.context_left = 4
         self.context_right = 4
         self.apply_mvn = True
@@ -384,7 +394,7 @@ class SeqDataset(BaseOpts):
     DNN model. The DataLoader options are not here.
     """
     def __init__(self, config:str=None, **kwargs):
-        self.__name__ = 'SeqDatasetOpts'
+        self.__name__ = 'SeqDataset'
         self.seq_len = 100
         self.splice_frames = True
         self.apply_ma = False
@@ -411,7 +421,7 @@ class SeqDataset(BaseOpts):
 #----------------------------------------------------------------
 class TrainNnet(BaseOpts):
     def __init__(self,config_mdl:str=None, config_ds:str=None, **kwargs):
-        self.__name__='NnetOpts'
+        self.__name__='TrainNnet'
         self.model = 'Dnn_4h1bn'
         self.dataset = 'SimpleDataset'
         self.update(config_mdl,**kwargs)
@@ -423,6 +433,4 @@ class TimeStamp(BaseOpts):
     def __init__(self,config:str=None, **kwargs):
         self.__name__='TimeStamp'
         self.format = '%Y/%m/%dT%H:%M:%S.%f'
-        self.stamp = '0001/01/01T00:00:00.000000'
-        self.offset = 0.0
         self.update(config,**kwargs)

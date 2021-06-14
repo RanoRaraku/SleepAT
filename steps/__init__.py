@@ -7,4 +7,3 @@ from .make_mvn_stats import make_mvn_stats
 from .score_detect import score_detect
 from .segment_data import segment_data
 from .train_nnet import train_nnet
-from .train_dur import train_dur

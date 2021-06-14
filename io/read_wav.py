@@ -16,10 +16,10 @@ def read_wav(file:str):
         (fs,wave) ... sampling rate in Hz and waveform
     """
     if not isinstance(file,str):
-        print(f'{" ":3}Error read_wav(): file arg. expects string, got {type(file)}.')
+        print(f'Error read_wav(): expects string, got {type(file)}.')
         exit(1)
     if not os.path.isfile(file):
-        print(f'{" ":3}Error read_wav(): file {file} not found.')
+        print(f'Error read_wav(): file {file} not found.')
         exit(1)
     return(wavfile.read(file))
 
