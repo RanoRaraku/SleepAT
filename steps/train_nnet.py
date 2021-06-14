@@ -21,19 +21,30 @@ def train_nnet(train_data:str, dev_data:str, lang_dir:str, exp_dir:str, config_m
         dev_data ... directory for development data
         lang_dir ... directory that contains events.txt file
         exp_dir ... output directory of training
+
         <config_mdl> ... config file for neural network (default:str=None)
         <config_ds> .... config file for dataset (default:str=None)
         <config_train> ... config file for training (default:str=None)
-    """
-    conf = opts.TrainNnet(config_mdl,config_ds)
-    print(f'Training {conf.model} model on {train_data} data.')
 
+    TODO:
+        add more info into log from config files
+
+    """
+    # Checks and loads
+    print(f'Training a Nnet on {train_data} data.')
+
+    for item in [train_data, dev_data, lang_dir]:
+        if not path.exists(item):
+            print(f'Error train_nnet(): {item} not found.')
+            exit(1)
     if not path.isdir(exp_dir):
         os.mkdir(exp_dir)
-    for file in utils.list_files(exp_dir):
-        os.remove(path.join(exp_dir,file))
+    else:
+        for file in utils.list_files(exp_dir):
+            os.remove(path.join(exp_dir,file))
 
     # Create Dataloader
+    conf = opts.TrainNnet(config_mdl,config_ds)
     events = io.read_scp(path.join(lang_dir,'events'))
     events_num = len(set(events.values()))
     if events_num < 1:
@@ -49,3 +60,5 @@ def train_nnet(train_data:str, dev_data:str, lang_dir:str, exp_dir:str, config_m
     model = getattr(nnet,conf.model)
     mdl = model(config=config_mdl, in_dim=sample_dim, out_dim=events_num)
     nnet.train_torch(mdl, trainload, devload, exp_dir, config=config_train)
+
+    print(f'Training done.')
