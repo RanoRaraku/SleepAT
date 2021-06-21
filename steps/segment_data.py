@@ -9,10 +9,12 @@ from sleepat import io, utils, opts
 
 def segment_data(data_dir:str, config:str=None, **kwargs) -> None:
     """
-    Segment files the data directory according to the utt2seg file. This means
-    splitting/changing files and changing utt_ids to match. Often, We dont want
+    Segment files in the data directory according to the utt2seg file. This means
+    splitting/changing files and changing utt_ids to match. Often, we dont want
     to segment waveforms and dump them on disk, but do it on the fly during
-    feature extraction, so we just copy wave.scp/utt2seg.
+    feature extraction, so we just copy wave.scp/utt2seg. The files that will be 
+    modified are utt2spk, spk2utt, annot, periods.
+
     Input:
         data_dir ... data source directory
         <seg_len> ... segment length in seconds (default:float = 10)
