@@ -54,5 +54,4 @@ def make_mfcc(data_dir:str, feat_dir:str, config:str=None, **kwargs) -> None:
             io.write_npy(file, mfcc)
             feats_dict[utt_id] = file
     io.write_scp(path.join(data_dir,'mfcc.scp'), feats_dict)
-    
     print(f'MFCC extraction done.') 

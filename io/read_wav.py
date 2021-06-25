@@ -3,8 +3,10 @@ Made by Michal Borsky, 2019, copyright (C) RU
 Basic IO routines.
 """
 import os
+import numpy as np
 import scipy
 from scipy.io import wavfile
+
 
 def read_wav(file:str):
     """
@@ -21,7 +23,9 @@ def read_wav(file:str):
     if not os.path.isfile(file):
         print(f'Error read_wav(): file {file} not found.')
         exit(1)
-    return(wavfile.read(file))
+
+    (fs,wave) = wavfile.read(file)
+    return(fs, wave)
 
 
 
