@@ -4,7 +4,7 @@ Basic utils routine.
 """
 import os
 
-def list_files(directory:str, extension:str='') -> list():
+def list_files(directory:str, extension:str='') -> list:
     """
     Searches directory for files with a specified extension. Only the
     file names are returned, not fully specified path.
