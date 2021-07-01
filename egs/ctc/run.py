@@ -7,13 +7,13 @@ using methodology as defined for a detection problem in machine learning.
 import os
 from os import path
 import sleepat
-from sleepat import steps, utils, infer, io
+from sleepat import steps, utils, io
 from sleepat.egs.ctc import local
 
 ## Config section
 stage = 0
-audio_data = '/home/borsky/Projects/CTC-Friday/audio'
 work_dir = '/home/borsky/Projects/CTC-Friday'
+audio_data = path.join(work_dir,'audio')
 data_dir = path.join(work_dir,'data')
 feat_dir = path.join(work_dir,'feats')
 exp_dir = path.join(work_dir,'exp')
@@ -21,13 +21,14 @@ wave_dir = path.join(work_dir,'wave')
 
 
 if stage <= 0:
-    if not path.exists(wave_dir):
-        os.mkdir(wave_dir)
     if not path.exists(data_dir):
         os.mkdir(data_dir)
+    if not path.exists(feat_dir):
+        os.mkdir(feat_dir)
     if not path.exists(exp_dir):
         os.mkdir(exp_dir)
-
+    if not path.exists(wave_dir):
+        os.mkdir(wave_dir)
 
 if stage <= 1:
     local.prepare_data(audio_data, data_dir, wave_dir)
