@@ -8,7 +8,7 @@ from sleepat import io, utils
 
 def prepare_data(data_dir:str, dst_dir:str, wave_dir:str, config:str=None, **kwargs) -> None:
     """
-    Script to prepare data. 
+    Script to prepare data.
 
     Arguments:
         data_dir ... folder containg VSN-10-048 dataset.
@@ -35,7 +35,7 @@ def prepare_data(data_dir:str, dst_dir:str, wave_dir:str, config:str=None, **kwa
             os.makedirs(path.join(wave_dir,subset))
 
 
-        (wave,utt2spk,annot) = dict(), dict(), dict()       
+        (wave,utt2spk,annot) = dict(), dict(), dict()
         for file in utils.list_files(path.join(data_dir,subset),'wav'):
 
             utt_id = file.split('.')[0]
@@ -46,7 +46,7 @@ def prepare_data(data_dir:str, dst_dir:str, wave_dir:str, config:str=None, **kwa
             (fs,waveform) = io.read_wav(path.join(data_dir,subset,file))
             io.write_npy(npy_file, waveform)
 
-            # Pupulate standard 
+            # Pupulate standard
             wave[utt_id] = {'file':npy_file,'fs':fs}
             utt2spk[utt_id] = spk_id
             annot[utt_id] = "hello world"

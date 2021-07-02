@@ -2,7 +2,6 @@ import sleepat.dsp
 import sleepat.feat
 import sleepat.io
 import sleepat.nnet
-import sleepat.nox
 import sleepat.opts
 import sleepat.objects
 import sleepat.steps

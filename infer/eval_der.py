@@ -113,5 +113,4 @@ def eval_der(ref:list, hyp:list, events:dict, thr:float = 2/3) -> np.ndarray:
         ali.append(((float('nan'),l), max(C[:,l]), 'FA'))
 
     score = np.array([h,m,fa,c],dtype=np.uint32)
-
     return (score, ali)
