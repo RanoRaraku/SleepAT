@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """
 Michal Borsky, Reykjavik University, 2020.
 
@@ -11,8 +13,8 @@ from sleepat import steps, utils, io
 from sleepat.egs.ctc import local
 
 ## Config section
-stage = 0
-work_dir = '/home/borsky/Projects/CTC-Friday'
+stage = 2
+work_dir = '/home/derik/work/CTC/CTC-friday'
 audio_data = path.join(work_dir,'audio')
 data_dir = path.join(work_dir,'data')
 feat_dir = path.join(work_dir,'feats')
@@ -32,10 +34,11 @@ if stage <= 0:
 
 if stage <= 1:
     local.prepare_data(audio_data, data_dir, wave_dir)
-    #local.prepare_lang(data_dir)
+    local.prepare_lang(data_dir)
 
 if stage <= 2:
     for subset in ['training','test']:
-        steps.make_mfcc(path.join(data_dir,subset),feat_dir)
+        data_sub = path.join(data_dir,subset)
+        steps.make_mfcc(data_sub,feat_dir)
+        utils.merge_scp(f'{data_sub}/mfcc.scp', scp_out=f'{data_sub}/feats.scp')
         steps.make_mvn_stats(path.join(data_dir,subset),feat_dir)
-
