@@ -1,15 +1,18 @@
 """
 Made by Michal Borsky, 2019, copyright (C) RU
-Adds null events to a scoring.
+Insert eps characters to text.
 """
 import sleepat
 from sleepat import utils, objects
 
 
-def insert_null(scoring:list, period:dict) -> list:
+def insert_eps(scoring:list, period:dict) -> list:
     """
-    Adds 'null' events to a scoring to fill in the gaps between events for full
-    annotation. A scoring is a list of events, each is dict(), that occur within
+    Insert eps characters to a text that contains a transcription at a word level 
+    of a recording. The eps characters are added between any repeating characters.
+    
+    
+    . A scoring is a list of events, each is dict(), that occur within
     an utterance, which can be also empty. Full info on the utterance is saved
     within 'period'. Scoring duration is the length of that utterance and it must
     use same units as event['onset'] and event['duration']. Scoring_start is a start

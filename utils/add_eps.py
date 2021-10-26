@@ -6,7 +6,7 @@ import sleepat
 from sleepat import utils, objects
 
 
-def insert_null(scoring:list, period:dict) -> list:
+def insert_eps(scoring:list, period:dict) -> list:
     """
     Adds 'null' events to a scoring to fill in the gaps between events for full
     annotation. A scoring is a list of events, each is dict(), that occur within

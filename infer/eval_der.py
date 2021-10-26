@@ -102,6 +102,7 @@ def eval_der(ref:list, hyp:list, events:dict, thr:float = 2/3) -> np.ndarray:
                 c += 1
                 ali.append((pair, val, 'C'))
 
+
     # Assign M/FA labels based on events missing in ali
     (m,fa) = (0,0)
     for k in set(range(0,reflen)).difference(ali_k):
@@ -113,4 +114,6 @@ def eval_der(ref:list, hyp:list, events:dict, thr:float = 2/3) -> np.ndarray:
         ali.append(((float('nan'),l), max(C[:,l]), 'FA'))
 
     score = np.array([h,m,fa,c],dtype=np.uint32)
-    return (score, ali)
+
+    return score
+    #return (score, ali)

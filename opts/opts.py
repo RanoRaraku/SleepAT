@@ -277,9 +277,9 @@ class PrepVSN_10048(BaseOpts):
     def __init__(self, config:str=None, **kwargs):
         self.__name__ = 'PrepVSN_10048'
         self.scorings = ['ms_snore_v1_p1','ms_snore_v1_p2']
-        self.bad_spk = ['']
+        self.bad_sub = ['']
         self.use_period = 'analysis'
-        self.utt2seg = {}
+        self.rec2seg = {}
         self.update(config,**kwargs)
 
 class FormatVSN_10048(BaseOpts):

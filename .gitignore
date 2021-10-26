@@ -1,3 +1,6 @@
 sandbox/*
 __pycache__
 */__pycache__
+egs/cough_detect/*
+egs/ctc/*
+nox/*

@@ -11,7 +11,7 @@ def validate_data(data_dir:str, no_feats:bool=True) -> None:
     Checks the data directory. Invoked after data preparation. The objective is to
     make sure the precessed dataset is in a standardized format. The scp files are 
     dictionaries so they dont need to be sorted, but they need to have identical
-    identifiers across all files as top level keys. The identifier is utt_id.
+    identifiers across all files as top level keys. The identifier is rec_id.
     Input:
         data_dir .... directory to check
         no_feats .... dont check feats.scp (default:bool = False)
@@ -22,7 +22,7 @@ def validate_data(data_dir:str, no_feats:bool=True) -> None:
         print(f'Error: Data {data_dir} not found.')
         exit(1)
 
-    required = ['utt2spk','spk2utt','wave.scp','annot']
+    required = ['rec2sub','sub2rec','wave.scp','annot']
     if not no_feats:
         required += ['feats.scp']
     optional = ['targets.scp','periods']
@@ -32,36 +32,36 @@ def validate_data(data_dir:str, no_feats:bool=True) -> None:
             print(f'Error: file {file} is missing.')
             exit()
 
-    ## Get utt_ids from utt2spk
-    utt_ids = sorted(io.read_scp(path.join(data_dir,required[0])).keys())
+    ## Get rec_ids from rec2sub
+    rec_ids = sorted(io.read_scp(path.join(data_dir,required[0])).keys())
 
-    ## Check utt2spk and spk2utt
-    spk2utt = io.read_scp(path.join(data_dir,'spk2utt'))
-    if not utt_ids == sorted(utils.spk2utt_to_utt2spk(spk2utt).keys()):
-            print(f'Error: Utterance ids in spk2utt dont match with utt2spk.')
+    ## Check rec2sub and sub2rec
+    sub2rec = io.read_scp(path.join(data_dir,'sub2rec'))
+    if not rec_ids == sorted(utils.sub2rec_to_rec2sub(sub2rec).keys()):
+            print(f'Error: recerance ids in sub2rec dont match with rec2sub.')
             exit()
 
-    ## Check utt_ids for wave.scp
+    ## Check rec_ids for wave.scp
     wave_dict = io.read_scp(path.join(data_dir,'wave.scp'))
-    if path.isfile(path.join(data_dir,'utt2seg')):
-        utt2seg = io.read_scp(path.join(data_dir,'utt2seg'))
-        if not sorted(wave_dict.keys()) == sorted(utt2seg.keys()):
-            print(f'Error: Utterance ids in wave.scp dont match with utt2seg.')
+    if path.isfile(path.join(data_dir,'rec2seg')):
+        rec2seg = io.read_scp(path.join(data_dir,'rec2seg'))
+        if not sorted(wave_dict.keys()) == sorted(rec2seg.keys()):
+            print(f'Error: recerance ids in wave.scp dont match with rec2seg.')
             exit()
-        wave_ids = [key for (key,_) in utils.get_nested_dict_items(utt2seg, depth = 1)]
+        wave_ids = [key for (key,_) in utils.get_nested_dict_items(rec2seg, depth = 1)]
     else:
         wave_ids = wave_dict.keys()
-    if not utt_ids == sorted(wave_ids):
-            print(f'Error: Utterance ids in utt2spk dont match with wave.scp.')
+    if not rec_ids == sorted(wave_ids):
+            print(f'Error: recerance ids in rec2sub dont match with wave.scp.')
             exit()
 
-    ## Check utt_ids for other files
+    ## Check rec_ids for other files
     for file in optional:
         fid = path.join(data_dir,file)
         if path.isfile(fid):
             scp = io.read_scp(fid)
-            if not utt_ids == sorted(scp.keys()):
-                print(f'Error: Utterance ids in {file} dont match with {required[0]}.')
+            if not rec_ids == sorted(scp.keys()):
+                print(f'Error: recerance ids in {file} dont match with {required[0]}.')
                 exit()
 
 

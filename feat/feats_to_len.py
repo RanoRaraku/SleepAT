@@ -17,3 +17,4 @@ def feats_to_len(feats_scp:dict) -> tuple:
     for utt_id, fid in feats_scp.items():
         feats = io.read_npy(fid)
         yield (utt_id, feats.shape[0])
+

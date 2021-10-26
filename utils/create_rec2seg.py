@@ -11,9 +11,9 @@ from os import path
 import sleepat
 from sleepat import io, dsp
 
-def create_utt2seg(data_dir:str, seg_len:float) -> None:
+def create_rec2seg(data_dir:str, seg_len:float) -> None:
     """
-    Creates a utt2seg file that specifies how to segment wave files into non-overlapping
+    Creates a rec2seg file that specifies how to segment wave files into non-overlapping
     chunks. The file is saved in data_dir. The script expects wave.scp and annotation to
     make sure the segment doesn't cut an event in half. In order to speed up the search,
     we transform annotation to simple event boundaries. Script expects seg_len, seg_eps
@@ -23,25 +23,25 @@ def create_utt2seg(data_dir:str, seg_len:float) -> None:
         seg_len ... segment length (default:float = 10)
         seg_len_min ... minimal segment length (default:float = 1.0)
     """
-    print(f'Preparing utt2seg file for {data_dir}.')
+    print(f'Preparing rec2seg file for {data_dir}.')
     wave_dict = io.read_scp(path.join(data_dir,'wave.scp'))
     seg_len_min = 1
 
     ## Main
-    utt2seg = dict()
-    for utt_id, item in wave_dict.items():
-        utt_len = dsp.wave_to_len(item['file'], item['fs'])
+    rec2seg = dict()
+    for rec_id, item in wave_dict.items():
+        rec_len = dsp.wave_to_len(item['file'], item['fs'])
         (seg_beg,idx) = 0.0, 0
         tmp = dict()
 
-        while (seg_beg+seg_len_min) <= utt_len:
-            seg_id = '-'.join([utt_id,'{:04}'.format(idx)])
-            seg_end = round(min(seg_beg+seg_len, utt_len),5)
+        while (seg_beg+seg_len_min) <= rec_len:
+            seg_id = '-'.join([rec_id,'{:04}'.format(idx)])
+            seg_end = round(min(seg_beg+seg_len, rec_len),5)
             tmp[seg_id] = {'onset': round(seg_beg,5),'duration': round(seg_end-seg_beg,5)}
             seg_beg = seg_end
             idx += 1
-        utt2seg[utt_id] = tmp
-    io.write_scp(path.join(data_dir,'utt2seg'),utt2seg)
+        rec2seg[rec_id] = tmp
+    io.write_scp(path.join(data_dir,'rec2seg'),rec2seg)
 
 
     """ Legacy code when I checked events before cutting

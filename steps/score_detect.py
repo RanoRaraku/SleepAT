@@ -13,7 +13,7 @@ def score_detect(data_dir:str, lang_dir:str, decode_dir:str) -> None:
     Evaluate detection performance which is understood as classification and localization
     problem.
     """
-    print(f'Scoring {decode_dir}.')
+    print(f'Scoring {data_dir} vs .{decode_dir}.')
 
     # Checks and file loading
     for item in [data_dir,lang_dir,decode_dir]:
@@ -26,43 +26,50 @@ def score_detect(data_dir:str, lang_dir:str, decode_dir:str) -> None:
     if not path.isdir(res_dir):
         os.mkdir(res_dir)
 
-    sub2utt = io.read_scp(path.join(data_dir,'spk2utt'))
-    utt2sub = io.read_scp(path.join(data_dir,'utt2spk'))
-    refer = io.read_scp(path.join(data_dir,'annot'))
-    hypth = io.read_scp(path.join(decode_dir,'trans'))
+    sub2rec = io.read_scp(path.join(data_dir,'sub2rec'))
+    rec2sub = io.read_scp(path.join(data_dir,'rec2sub'))
+    ref = io.read_scp(path.join(data_dir,'annot'))
+    hyp = io.read_scp(path.join(decode_dir,'annot'))
     events = io.read_scp(path.join(lang_dir,'events'))
 
     # Remove null events
     nonull = [x for x in events.keys() if not (x == events['null']) ]
-    for utt in utt2sub.keys():
-        refer[utt] = utils.filter_scoring(refer[utt],'label',nonull)
-        hypth[utt] = utils.filter_scoring(hypth[utt],'label',nonull)
+    for rec in rec2sub.keys():
+        ref[rec] = utils.filter_scoring(ref[rec],'label',nonull)
+        hyp[rec] = utils.filter_scoring(hyp[rec],'label',nonull)
 
-    for error in ['ser','ier', 'der']:
-
+    for error in ['ser','ier', 'der','ssde0','ssde05']:
+   # for error in ['ssde0','ssde05']:
         # IE is DE with thr = 0, (default thr = 2/3)
+
         if error == 'ier':
             kwargs = {'thr':0}
             func = getattr(infer,'eval_der')
+        elif error == 'ssde0':
+            kwargs = {'thr':0}
+            func = getattr(infer,'eval_ssde')
+        elif error == 'ssde05':
+            kwargs = {'thr':2/3}
+            func = getattr(infer,'eval_ssde')   
         else:
             kwargs = {}
             func = getattr(infer,f'eval_{error}')
 
-        # get per utterance/subject/total stats
-        per_utt = dict()
-        for utt in utt2sub:
-            per_utt[utt] = func(refer[utt],hypth[utt],events, **kwargs)
-        per_sub = infer.accumulate_score(per_utt, mode='per_sub', sub2utt=sub2utt)
-        total = infer.accumulate_score(per_utt, mode='total')
+        # get per recerance/subject/total stats
+        per_rec = dict()
+        for rec in rec2sub:
+            per_rec[rec] = func(ref[rec],hyp[rec],events, **kwargs)
+        per_sub = infer.accumulate_score(per_rec, mode='per_sub', sub2rec=sub2rec)
+        total = infer.accumulate_score(per_rec, mode='total')
 
         # Write results to a file
         with open(path.join(res_dir, error),'w') as fid:
 
-            # Per utterance
-            print(f'Per Utterance',file=fid)
-            for utt, score in per_utt.items():
+            # Per recording
+            print(f'Per recording',file=fid)
+            for rec, score in per_rec.items():
                 res = infer.compute_metrics(score)
-                print(f'{utt} - error [%] {res["err"]} - f1 {res["f1"]} - [H/M/FA/C] : {res["score"]}', file=fid)
+                print(f'{rec} - error [%] {res["err"]} - f1 {res["f1"]} - [H/M/FA/C] : {res["score"]}', file=fid)
             print(f'\n',file=fid)
 
             # Per subject
@@ -78,5 +85,4 @@ def score_detect(data_dir:str, lang_dir:str, decode_dir:str) -> None:
                 res = infer.compute_metrics(score)
                 print(f'total - error [%] {res["err"]} - f1 {res["f1"]} - [H/M/FA/C] : {res["score"]}', file=fid)
 
-    io.write_scp(path.join(decode_dir,'annot'),refer)
-    print(f'Scoring done.')
+    print(f'Done, results in {decode_dir}/scoring.')

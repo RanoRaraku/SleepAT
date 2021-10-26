@@ -6,9 +6,9 @@ import numpy as np
 import sleepat
 from sleepat import dsp, opts
 
-def scoring_to_targets(scoring:list, period:dict, events:dict, config:str=None, **kwargs) -> np.ndarray:
+def annot_to_targets(scoring:list, period:dict, events:dict, config:str=None, **kwargs) -> np.ndarray:
     """
-    Transform scoring from an segment of duration 'dur' to targets for training.
+    Transform annot from an segment of duration 'dur' to targets for training.
     Uses the same segmentation setup as dsp.segment(). Events in scoring must be
     defined in events and are expected to be integers.
 
