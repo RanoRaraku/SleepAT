@@ -6,16 +6,14 @@ from os import path
 import sleepat
 from sleepat import io
 
-def prepare_dict(dict_dir:str,null_events:list=['null']) -> None:
+def prepare_dict(dict_dir:str) -> None:
     """
-    A simple lexicon used to create the targets from annotation.
-    It maps between 'events' exported in .scoring.json and values
-    used for training. It also contains a target value for 'null'
-    label, i.e. when nothing is happening.
+    A simple dictionary used to create the targets from annotation. The dictionary maps
+    between events (type = str) and targets (type = int) that are used for NN training.
     """
     if not path.exists(dict_dir):
         os.makedirs(dict_dir)
 
-    # Prepare lexicon
+    file = path.join(dict_dir,'events')
     events = {'snorebreath':1, 'breathing-effort':0, 'null':0}
-    io.write_scp(path.join(dict_dir,'events'), events)
+    io.write_scp(file, events)

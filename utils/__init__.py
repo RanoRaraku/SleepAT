@@ -15,7 +15,7 @@ from .segment_scoring import segment_scoring
 from .segment_wave import segment_wave
 from .setup_workdir import setup_workdir
 from .split_data_per_recording import split_data_per_recording
-from .split_data_per_speaker import split_data_per_speaker
+from .split_data_per_subject import split_data_per_subject
 from .sub2rec_to_rec2sub import sub2rec_to_rec2sub
 from .targets_to_scoring import targets_to_scoring
 from .text_to_annot import text_to_annot

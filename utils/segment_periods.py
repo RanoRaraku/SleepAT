@@ -23,7 +23,9 @@ def segment_periods(periods:dict, segments:dict=None) -> tuple:
     if segments is None or len(segments) == 0:
         return ('0000', periods)
 
-    for seg_id, seg in segments.items():      
+    for seg_id, seg in segments.items():
         seg_period = seg
-        seg_period['start'] = objects.TimeStamp(stamp=periods['start'], offset=seg['onset']).print()
+        TStamp = objects.TimeStamp(tstamp=periods['start'])
+        TStamp.increment(seg['onset'])
+        seg_period['start'] = TStamp.as_string()
         yield (seg_id, seg_period)

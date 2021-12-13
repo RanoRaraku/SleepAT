@@ -13,7 +13,7 @@ class TimeStamp(object):
     A timestamp class that handles conversions between datetime.datetime and string types.
     Used in JSON dicts that handles events, periods, segments, etc. Default timestamp format
     is '%Y/%m/%dT%H:%M:%S.%f' and value is '0001/01/01T00:00:00.00000'. The actual value is
-    saved as datetime.datetime object. 
+    saved as datetime.datetime objects. 
     """
 
     def __init__(self, tstamp:str='0001/01/01T00:00:00.000000', config:str=None, **kwargs):
@@ -62,14 +62,14 @@ class TimeStamp(object):
             format ... timestamp format to cast into (def:str = '%Y/%m/%dT%H:%M:%S.%f')
         """
         if not isinstance(format, str):
-            print(f'Error Nox.TimeStamp: "format" expects string, got {type(format)}.')
+            print(f'Error objects.TimeStamp: "format" expects string, got {type(format)}.')
             exit(1)
 
         self.conf.format = format
 
     def copy(self):
         """
-        Copy the whole object. The return is a new instance of the TimeStamp class.
+        Copy the whole objects. The return is a new instance of the TimeStamp class.
         """
 
         return deepcopy(self)
@@ -80,7 +80,7 @@ class TimeStamp(object):
         Used to hide the timedelta calculation. The output is in seconds.
         """
         if not isinstance(timestamp, TimeStamp):
-            print(f'Error Nox.TimeStamp: timestamp expects object.TimeStamp object, got {type(timestamp)}.')
+            print(f'Error objects.TimeStamp: expects objects.TimeStamp object, got {type(timestamp)}.')
             exit(1)
 
         delta = (self.tstamp - timestamp.tstamp).total_seconds() 
@@ -92,7 +92,7 @@ class TimeStamp(object):
         between their datetimes, format plays no role.
         """
         if not isinstance(timestamp, TimeStamp):
-            print(f'Error Nox.TimeStamp: timestamp expects object.TimeStamp object, got {type(timestamp)}.')
+            print(f'Error objects.TimeStamp: expects objects.TimeStamp object, got {type(timestamp)}.')
             exit(1)
 
         return self.tstamp == timestamp.tstamp
@@ -103,7 +103,7 @@ class TimeStamp(object):
         between their datetimes, format plays no role.
         """
         if not isinstance(timestamp, TimeStamp):
-            print(f'Error Nox.TimeStamp: timestamp expects object.TimeStamp object, got {type(timestamp)}.')
+            print(f'Error objects.TimeStamp: expects objects.TimeStamp object, got {type(timestamp)}.')
             exit(1)
 
         return self.tstamp != timestamp.tstamp
@@ -114,7 +114,7 @@ class TimeStamp(object):
         between their datetimes, format plays no role.
         """
         if not isinstance(timestamp, TimeStamp):
-            print(f'Error Nox.TimeStamp: timestamp expects object.TimeStamp object, got {type(timestamp)}.')
+            print(f'Error objects.TimeStamp: expects objects.TimeStamp object, got {type(timestamp)}.')
             exit(1)
 
         return self.tstamp > timestamp.tstamp
@@ -125,7 +125,7 @@ class TimeStamp(object):
         between their datetimes, format plays no role.
         """
         if not isinstance(timestamp, TimeStamp):
-            print(f'Error Nox.TimeStamp: timestamp expects object.TimeStamp object, got {type(timestamp)}.')
+            print(f'Error objects.TimeStamp: expects objects.TimeStamp object, got {type(timestamp)}.')
             exit(1)
 
         return self.tstamp >= timestamp.tstamp
@@ -136,7 +136,7 @@ class TimeStamp(object):
         between their datetimes, format plays no role.        
         """
         if not isinstance(timestamp, TimeStamp):
-            print(f'Error Nox.TimeStamp: timestamp expects object.TimeStamp object, got {type(timestamp)}.')
+            print(f'Error objects.TimeStamp: expects objects.TimeStamp object, got {type(timestamp)}.')
             exit(1)
 
         return self.tstamp < timestamp.tstamp
@@ -147,44 +147,15 @@ class TimeStamp(object):
         between their datetimes, format plays no role.        
         """
         if not isinstance(timestamp, TimeStamp):
-            print(f'Error Nox.TimeStamp: timestamp expects object.TimeStamp object, got {type(timestamp)}.')
+            print(f'Error objects.TimeStamp: expects objects.TimeStamp object, got {type(timestamp)}.')
             exit(1)
 
         return self.tstamp <= timestamp.tstamp
 
     def __repr__(self) -> str:
         """
-        Print the timestamp as a string when calling the object. Identical
+        Print the timestamp as a string when calling the objects. Identical
         to TimeStamp.date_to_string(). For the sake of convenience.
         """
 
         return self.as_string()
-
-
-    """
-    def __sub__(self, timestamp):
-        Subtraction of two TimeStamps is again a TimeStamp, the resulting datetime is equal
-        to their difference, and the format is equal to the format of the parent TimeStamp.
-
-        if not isinstance(timestamp, TimeStamp):
-            print(f'Error Nox.TimeStamp: timestamp expects object.TimeStamp object, got {type(timestamp)}.')
-            exit(1)
-
-        out = self.copy()
-        out.increment(seconds = timestamp.tstamp.total_seconds())
-        return out
-
-  
-    def __add__(self, timestamp):
-        Addition of two TimeStamps is again a TimeStamp, the resulting datetime is equal
-        to their combined tstamps, and the format is equal to the format of the parent 
-        TimeStamp.
-
-        if not isinstance(timestamp, TimeStamp):
-            print(f'Error Nox.TimeStamp: timestamp expects object.TimeStamp object, got {type(timestamp)}.')
-            exit(1)
-
-        out = self.copy()
-        out.increment(seconds = timestamp.tstamp.total_seconds())
-        return out
-    """

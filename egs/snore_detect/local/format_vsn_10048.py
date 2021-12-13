@@ -34,7 +34,7 @@ def format_vsn_10048(src_dir:str, dst_dir:str, wave_dir:str, config:str=None, **
         config ... config file to set optional args <>, (default:str=None)
         **kwargs ... to set optional args (<>)
     """
-    print(f'Formatting data folder {src_dir} into {dst_dir}.')
+    print(f'Formatting data folder {src_dir} to {dst_dir}.')
     conf = opts.FormatVSN_10048(config=config, **kwargs)
 
     if not path.isdir(src_dir):

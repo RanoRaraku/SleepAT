@@ -64,49 +64,49 @@ class TimeToFrame(BaseOpts):
 
 class Segment(BaseOpts):
     def __init__(self):
-        self.__name__ = 'SegmentOpts'        
+        self.__name__ = 'SegmentOpts'
         self.register_from_opts(TimeToFrame())
         self.remove_dc = True
         self.wtype = 'hamming'
 
 class Spect(BaseOpts):
     def __init__(self):
-        self.__name__ = 'SpectOpts'        
+        self.__name__ = 'SpectOpts'
         self.register_from_opts(Segment())
 
 class PowSpect(BaseOpts):
     def __init__(self):
-        self.__name__ = 'PowSpectOpts'        
+        self.__name__ = 'PowSpectOpts'
         self.register_from_opts(Segment())
 
 class Preemph(BaseOpts):
     def __init__(self):
-        self.__name__ = 'PremphOpts'        
+        self.__name__ = 'PremphOpts'
         self.preemphasis_alpha=0.97
 
 class Mel(BaseOpts):
     def __init__(self):
-        self.__name__ = 'MelOpts'        
+        self.__name__ = 'MelOpts'
         self.f = 0.0
 
 class InvMel(BaseOpts):
     def __init__(self):
-        self.__name__ = 'InvMelOpts'        
+        self.__name__ = 'InvMelOpts'
         self.melf = 0.0
 
 class Bark(BaseOpts):
     def __init__(self):
-        self.__name__ = 'BarkOpts'        
+        self.__name__ = 'BarkOpts'
         self.f = 0.0
 
 class InvBark(BaseOpts):
     def __init__(self):
-        self.__name__ = 'InvbarkOpts'        
+        self.__name__ = 'InvbarkOpts'
         self.barkf = 0.0
 
 class Melfb(BaseOpts):
     def __init__(self):
-        self.__name__ = 'MelbfOpts'        
+        self.__name__ = 'MelbfOpts'
         self.fs = 8000.0
         self.mel_filts = 22
         self.fmin = 0.0
@@ -115,7 +115,7 @@ class Melfb(BaseOpts):
 
 class Barkfb(BaseOpts):
     def __init__(self):
-        self.__name__ = 'BarkfbOpts'        
+        self.__name__ = 'BarkfbOpts'
         self.fs = 8000.0
         self.fmin = 0.0
         self.fmax = self.fs/2
@@ -123,7 +123,7 @@ class Barkfb(BaseOpts):
 
 class Delta(BaseOpts):
     def __init__(self):
-        self.__name__ = 'DeltaOpts'        
+        self.__name__ = 'DeltaOpts'
         self.delta_window = 2
 
 
@@ -181,7 +181,7 @@ class Acf(BaseOpts):
     def __init__(self, config:str=None, **kwargs):
         self.__name__ = 'Acf'
         self.register_from_opts(Segment())
-        self.register_from_opts(Preemph())        
+        self.register_from_opts(Preemph())
         self.actype = 'same'
         self.nacf = 320
         self.update(config,**kwargs)
